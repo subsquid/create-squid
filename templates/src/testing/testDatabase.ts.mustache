@@ -1,0 +1,37 @@
+import { TypeormDatabase } from '@subsquid/typeorm-store'
+import { DataSource } from 'typeorm'
+import { ProcessorContext } from '../config'
+
+export async function createTestDatabase(): Promise<{
+  ctx: ProcessorContext
+  close: () => Promise<void>
+  clear: () => Promise<void>
+}> {
+  const db = new TypeormDatabase({
+    stateSchema: 'test_processor',
+    supportHotBlocks: false
+  })
+
+  await db.connect()
+
+  const ctx = {
+    store: db.store,
+    blocks: [],
+    isHead: true,
+    isOnChain: true
+  } as ProcessorContext
+
+  return {
+    ctx,
+    close: async () => {
+      await db.disconnect()
+    },
+    clear: async () => {
+      // Clear all entities
+      const entities = db.store.manager.connection.entityMetadatas
+      for (const entity of entities) {
+        await db.store.manager.query(`DELETE FROM ${entity.tableName}`)
+      }
+    }
+  }
+}

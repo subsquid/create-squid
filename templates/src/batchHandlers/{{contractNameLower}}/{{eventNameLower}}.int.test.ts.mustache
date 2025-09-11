@@ -1,0 +1,63 @@
+import { handle{{eventName}}s } from './{{eventNameLower}}'
+import { createTestDatabase } from '../../testing/testDatabase'
+import { {{contractName}}{{eventName}} } from '../../model'
+import { ProcessorContext, DecodedLogWithContractMetadata } from '../../config'
+import { defaultObjects } from '../../testing/defaultObjects'
+
+describe('{{eventName}} handler', () => {
+  let ctx: ProcessorContext
+  let testDb: any
+
+  beforeAll(async () => {
+    testDb = await createTestDatabase()
+    ctx = testDb.ctx
+  })
+
+  afterAll(async () => {
+    await testDb.close()
+  })
+
+  beforeEach(async () => {
+    await testDb.clear()
+  })
+
+  it('should handle {{eventName}} events', async () => {
+    const logs: DecodedLogWithContractMetadata[] = [
+      {
+        id: '0x123',
+        address: '0x456',
+        data: '0x',
+        topics: ['0x789'],
+        transactionHash: '0xabc',
+        block: {
+          height: 12345,
+          hash: '0xdef',
+          parentHash: '0xghi',
+          timestamp: 1234567890
+        },
+        contract: {
+          name: '{{contractName}}',
+          instanceName: 'test',
+          instanceAddress: '0x456'
+        },
+        decoded: {
+{{#eventFields}}
+          {{fieldName}}: defaultObjects.{{fieldType}}('{{fieldName}}'),
+{{/eventFields}}
+        }
+      }
+    ]
+
+    const result = await handle{{eventName}}s('ethereum-mainnet', ctx, logs, {})
+
+    expect(result.{{eventNameLower}}s).toHaveLength(1)
+    expect(result.{{eventNameLower}}s[0]).toBeInstanceOf({{contractName}}{{eventName}})
+    expect(result.{{eventNameLower}}s[0].network).toBe('ethereum-mainnet')
+    expect(result.{{eventNameLower}}s[0].instanceAddress).toBe('0x456')
+    expect(result.{{eventNameLower}}s[0].block).toBe(12345)
+    expect(result.{{eventNameLower}}s[0].txnHash).toBe('0xabc')
+{{#eventFields}}
+    expect(result.{{eventNameLower}}s[0].{{fieldName}}).toBeDefined()
+{{/eventFields}}
+  })
+})

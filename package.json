@@ -1,0 +1,49 @@
+{
+  "name": "create-squid-generator",
+  "version": "1.0.0",
+  "description": "A TypeScript package for automatically generating blockchain indexer projects",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "create-squid": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "blockchain",
+    "indexer",
+    "squid",
+    "subsquid",
+    "ethereum",
+    "generator"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "mustache": "^4.2.0",
+    "js-yaml": "^4.1.0",
+    "commander": "^11.1.0",
+    "chalk": "^4.1.2",
+    "fs-extra": "^11.1.1",
+    "glob": "^10.3.10"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/mustache": "^4.2.4",
+    "@types/js-yaml": "^4.0.9",
+    "@types/fs-extra": "^11.0.4",
+    "@types/jest": "^29.5.8",
+    "typescript": "^5.3.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "README.md"
+  ]
+}

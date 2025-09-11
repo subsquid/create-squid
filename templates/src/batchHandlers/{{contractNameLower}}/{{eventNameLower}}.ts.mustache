@@ -1,0 +1,39 @@
+// {{eventNameLower}}.ts
+// This module maps {{eventName}} event logs to
+// any TypeORM model classes these logs might affect.
+
+import {
+  {{contractName}}{{eventName}}
+} from '../../model'
+import {
+  ProcessorContext,
+  DecodedLogWithContractMetadata
+} from '../../config'
+import {
+  NetworkName
+} from '../../types/config'
+
+export async function handle{{eventName}}s(
+  network: NetworkName,
+  ctx: ProcessorContext,
+  logs: DecodedLogWithContractMetadata[],
+  previouslyProcessed: {}
+): Promise<{
+  {{eventNameLower}}s: {{contractName}}{{eventName}}[]
+}> {
+
+  const {{eventNameLower}}s = logs.map(l => new {{contractName}}{{eventName}}({
+    id: l.id,
+    network,
+    instanceAddress: l.contract.instanceAddress,
+    block: l.block.height,
+    txnHash: l.transactionHash,
+{{#eventFields}}
+    {{fieldName}}: l.decoded.{{fieldName}},
+{{/eventFields}}
+  }))
+
+  await ctx.store.insert({{eventNameLower}}s)
+
+  return { {{eventNameLower}}s }
+}

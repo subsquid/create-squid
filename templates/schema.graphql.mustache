@@ -1,0 +1,15 @@
+{{#contracts}}
+{{#events}}
+type {{contractName}}{{name}} @entity {
+  id: ID!
+  network: String!
+  instanceAddress: String!
+  block: Int!
+  txnHash: String!
+{{#eventFields}}
+  {{fieldName}}: {{fieldType}}!
+{{/eventFields}}
+}
+
+{{/events}}
+{{/contracts}}

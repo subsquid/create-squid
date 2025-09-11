@@ -1,0 +1,104 @@
+import {
+  FieldSelection,
+  BlockHeader as _BlockHeader,
+  Log as _Log,
+  Transaction as _Transaction,
+  Trace as _Trace,
+  StateDiff as _StateDiff,
+  DataHandlerContext
+} from '@subsquid/evm-processor'
+
+import {Store as TypeormStore} from '@subsquid/typeorm-store'
+
+import {
+  NetworkConfig as _NetworkConfig,
+  FullConfig as _FullConfig,
+  ContractConfig as _ContractConfig,
+  EventConfig as _EventConfig
+} from  './types/config'
+
+import {
+  DecodedLogWithContractMetadata as _DecodedLogWithContractMetadata
+} from './types/extendedData'
+
+{{#contracts}}
+import * as {{contractNameLower}}Abi from './abi/{{contractNameLower}}'
+{{/contracts}}
+
+{{#contracts}}
+{{#events}}
+import { handle{{name}}s } from './batchHandlers/{{contractNameLower}}/{{eventNameLower}}'
+{{/events}}
+{{/contracts}}
+
+// Can vary by network/processor, but we'll use a single global value here.
+export const fieldSelection = {
+  log: {
+    address: true,
+    data: true,
+    topics: true,
+    transactionHash: true
+  }
+} as const // Without "as const" downstream types will break.
+// Temporarily designate "as FieldSelection" to gain IDE field suggestions.
+
+/***** types for use in handlers *****/
+
+export type BlockHeader = _BlockHeader<typeof fieldSelection>
+export type Log = _Log<typeof fieldSelection>
+export type Transaction = _Transaction<typeof fieldSelection>
+export type Trace = _Trace<typeof fieldSelection>
+export type StateDiff = _StateDiff<typeof fieldSelection>
+export type ProcessorContext = DataHandlerContext<TypeormStore, typeof fieldSelection>
+
+export type NetworkConfig = _NetworkConfig<TypeormStore, typeof fieldSelection>
+export type FullConfig = _FullConfig<TypeormStore, typeof fieldSelection>
+export type ContractConfig = _ContractConfig<TypeormStore, typeof fieldSelection>
+export type EventConfig = _EventConfig<TypeormStore, typeof fieldSelection>
+
+export type DecodedLogWithContractMetadata = _DecodedLogWithContractMetadata<typeof fieldSelection>
+
+/***** types for use in handlers - end *****/
+
+export const config: FullConfig = {
+{{#networks}}
+  '{{name}}': {
+    gateway: '{{gateway}}',
+    rpcEndpoint: process.env.{{rpcEndpoint}},
+    finalityConfirmation: {{finalityConfirmation}},
+    // order of requests matters - handler execution will follow it
+    requests: [
+{{#contracts}}
+{{#hasInstancesOnNetwork}}
+      {
+        contract: '{{name}}',
+        addresses: {
+{{#instances}}
+{{#isOnNetwork}}
+          '{{name}}': '{{address}}'.toLowerCase()
+{{/isOnNetwork}}
+{{/instances}}
+        },
+        events: [
+{{#events}}
+          {
+            name: '{{name}}',
+            abiHelper: {{contractNameLower}}Abi.events.{{name}},
+            batchHandler: handle{{name}}s
+          }
+{{/events}}
+        ],
+        range: {
+{{#instances}}
+{{#isOnNetwork}}
+          from: {{range.from}}
+{{/isOnNetwork}}
+{{/instances}}
+        }
+      },
+{{/hasInstancesOnNetwork}}
+{{/contracts}}
+    ]
+  },
+{{/networks}}
+}

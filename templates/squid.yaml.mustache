@@ -1,0 +1,24 @@
+manifestVersion: subsquid.io/v0.1
+name: {{projectName}}
+description: {{projectDescription}}
+build: 
+deploy:
+  addons:
+    postgres: 
+    rpc:
+{{#networks}}
+      - {{name}}.http
+{{/networks}}
+  processor:
+{{#networks}}
+    - name: {{name}}-processor
+      cmd: [ "sqd", "process:{{name}}:prod" ]
+{{/networks}}
+  api:
+    cmd:
+      - sqd
+      - serve:prod
+scale:
+  addons:
+    postgres:
+      storage: 200G
