@@ -5,8 +5,8 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 
 describe('SquidGenerator', () => {
-  const testConfigPath = path.join(__dirname, '..', '..', 'tests', 'event-tables', 'createSquid.yaml');
   const testOutputDir = path.join(__dirname, '..', '..', 'test-output');
+  const testConfigPath = path.join(testOutputDir, 'createSquid.yaml');
 
   const options: GeneratorOptions = {
     outputDir: testOutputDir,
@@ -21,6 +21,19 @@ describe('SquidGenerator', () => {
     if (await fs.pathExists(testOutputDir)) {
       await fs.remove(testOutputDir);
     }
+
+    // Create test directory structure
+    await fs.ensureDir(testOutputDir);
+    await fs.ensureDir(path.join(testOutputDir, 'abi'));
+
+    // Copy test config file
+    const sourceConfigPath = path.join(__dirname, '..', '..', 'tests', 'event-tables', 'createSquid.yaml');
+    await fs.copy(sourceConfigPath, testConfigPath);
+
+    // Copy test ABI files
+    const sourceAbiDir = path.join(__dirname, '..', '..', 'tests', 'event-tables', 'abi');
+    const targetAbiDir = path.join(testOutputDir, 'abi');
+    await fs.copy(sourceAbiDir, targetAbiDir);
   });
 
   afterAll(async () => {
@@ -58,7 +71,7 @@ describe('SquidGenerator', () => {
       expect(await fs.pathExists(path.join(testOutputDir, 'src', 'processor.ts'))).toBe(true);
       expect(await fs.pathExists(path.join(testOutputDir, 'src', 'config.ts'))).toBe(true);
 
-      // Check that ABI files were copied
+      // Check that ABI files are present (they should already be there from setup)
       expect(await fs.pathExists(path.join(testOutputDir, 'abi', 'erc20.json'))).toBe(true);
       expect(await fs.pathExists(path.join(testOutputDir, 'abi', 'aave-pool.json'))).toBe(true);
     });
@@ -99,6 +112,36 @@ describe('SquidGenerator', () => {
       // Check for LiquidationCall handler
       expect(await fs.pathExists(path.join(testOutputDir, 'src', 'batchHandlers', 'aavepool', 'liquidationcall.ts'))).toBe(true);
       expect(await fs.pathExists(path.join(testOutputDir, 'src', 'batchHandlers', 'aavepool', 'liquidationcall.int.test.ts'))).toBe(true);
+    });
+
+    it('should clean up existing generated files before generating new ones', async () => {
+      // First generate files
+      const generator = new SquidGenerator(testConfigPath, options);
+      await generator.generate();
+
+      // Verify files exist
+      expect(await fs.pathExists(path.join(testOutputDir, 'package.json'))).toBe(true);
+      expect(await fs.pathExists(path.join(testOutputDir, 'src', 'main.ts'))).toBe(true);
+
+      // Modify a file to simulate existing generated content
+      await fs.writeFile(path.join(testOutputDir, 'package.json'), '{"name": "old-project"}');
+
+      // Generate again
+      await generator.generate();
+
+      // Verify the file was regenerated (not the old content)
+      const packageJson = await fs.readJson(path.join(testOutputDir, 'package.json'));
+      expect(packageJson.name).toBe('test-squid');
+    });
+
+    it('should preserve createSquid.yaml and abi directory during cleanup', async () => {
+      const generator = new SquidGenerator(testConfigPath, options);
+      await generator.generate();
+
+      // Verify that createSquid.yaml and abi directory are preserved
+      expect(await fs.pathExists(testConfigPath)).toBe(true);
+      expect(await fs.pathExists(path.join(testOutputDir, 'abi'))).toBe(true);
+      expect(await fs.pathExists(path.join(testOutputDir, 'abi', 'erc20.json'))).toBe(true);
     });
   });
 });

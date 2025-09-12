@@ -16,30 +16,34 @@ program
 
 program
   .command('generate')
-  .description('Generate a new squid project')
-  .argument('<config>', 'Path to createSquid.yaml configuration file')
-  .argument('<output>', 'Output directory for the generated project')
+  .description('Generate a squid project in an existing directory')
+  .argument('<output>', 'Directory containing createSquid.yaml and ./abi folder')
   .option('-n, --name <name>', 'Project name', 'my-squid')
   .option('-d, --description <description>', 'Project description', 'A blockchain indexer project')
   .option('--skip-install', 'Skip npm install', false)
   .option('--skip-codegen', 'Skip code generation', false)
-  .action(async (configPath: string, outputDir: string, options: any) => {
+  .action(async (outputDir: string, options: any) => {
     try {
-      // Validate config file exists
-      if (!await fs.pathExists(configPath)) {
-        console.error(chalk.red(`❌ Configuration file not found: ${configPath}`));
+      const resolvedOutputDir = path.resolve(outputDir);
+      
+      // Validate output directory exists
+      if (!await fs.pathExists(resolvedOutputDir)) {
+        console.error(chalk.red(`❌ Directory does not exist: ${resolvedOutputDir}`));
         process.exit(1);
       }
 
-      // Validate output directory
-      const resolvedOutputDir = path.resolve(outputDir);
-      
-      if (await fs.pathExists(resolvedOutputDir)) {
-        const contents = await fs.readdir(resolvedOutputDir);
-        if (contents.length > 0) {
-          console.error(chalk.red(`❌ Output directory is not empty: ${resolvedOutputDir}`));
-          process.exit(1);
-        }
+      // Validate createSquid.yaml exists in the directory
+      const configPath = path.join(resolvedOutputDir, 'createSquid.yaml');
+      if (!await fs.pathExists(configPath)) {
+        console.error(chalk.red(`❌ createSquid.yaml not found in: ${resolvedOutputDir}`));
+        process.exit(1);
+      }
+
+      // Validate abi directory exists
+      const abiDir = path.join(resolvedOutputDir, 'abi');
+      if (!await fs.pathExists(abiDir)) {
+        console.error(chalk.red(`❌ ./abi directory not found in: ${resolvedOutputDir}`));
+        process.exit(1);
       }
 
       const generatorOptions: GeneratorOptions = {
@@ -50,9 +54,9 @@ program
         skipCodegen: options.skipCodegen
       };
 
-      console.log(chalk.blue('🚀 Creating squid project...'));
+      console.log(chalk.blue('🚀 Generating squid project...'));
+      console.log(chalk.gray(`Directory: ${resolvedOutputDir}`));
       console.log(chalk.gray(`Config: ${configPath}`));
-      console.log(chalk.gray(`Output: ${resolvedOutputDir}`));
       console.log(chalk.gray(`Name: ${options.name}`));
       console.log(chalk.gray(`Description: ${options.description}`));
 
@@ -106,8 +110,8 @@ contracts:
 
       await fs.writeFile(outputPath, sampleConfig);
       console.log(chalk.green(`✅ Sample configuration created: ${outputPath}`));
-      console.log(chalk.blue('\nEdit the configuration file and then run:'));
-      console.log(chalk.gray(`  create-squid generate ${outputPath} ./my-squid`));
+      console.log(chalk.blue('\nEdit the configuration file, add ABI files to ./abi folder, and then run:'));
+      console.log(chalk.gray(`  create-squid generate .`));
 
     } catch (error) {
       console.error(chalk.red('❌ Error creating sample config:'), error);

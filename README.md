@@ -25,7 +25,7 @@ npm install create-squid-generator
 npx create-squid init
 ```
 
-This creates a sample `createSquid.yaml` file:
+This creates a sample `createSquid.yaml` file in the current directory:
 
 ```yaml
 style: batchHandlers
@@ -62,8 +62,10 @@ Place your ABI JSON files in the `./abi` directory as referenced in the configur
 ### 3. Generate the Project
 
 ```bash
-npx create-squid generate createSquid.yaml ./my-squid
+npx create-squid generate .
 ```
+
+This will generate the squid project in the current directory, overwriting any existing generated files while preserving your `createSquid.yaml` and `./abi` folder.
 
 ## Configuration Reference
 
@@ -166,8 +168,8 @@ my-squid/
 ```typescript
 import { SquidGenerator } from 'create-squid-generator';
 
-const generator = new SquidGenerator('createSquid.yaml', {
-  outputDir: './my-squid',
+const generator = new SquidGenerator('./createSquid.yaml', {
+  outputDir: '.', // Current directory
   projectName: 'my-squid',
   projectDescription: 'My blockchain indexer',
   skipInstall: false,

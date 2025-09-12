@@ -36,8 +36,13 @@ export class SquidGenerator {
   public async generate(): Promise<void> {
     console.log('🚀 Starting squid project generation...');
 
-    // Create output directory
-    await fs.ensureDir(this.options.outputDir);
+    // Ensure output directory exists (should already exist with createSquid.yaml and ./abi)
+    if (!await fs.pathExists(this.options.outputDir)) {
+      throw new Error(`Output directory does not exist: ${this.options.outputDir}`);
+    }
+
+    // Clean up existing generated files
+    await this.cleanupExistingFiles();
 
     // Process the configuration
     const project = await this.processConfig();
@@ -45,8 +50,7 @@ export class SquidGenerator {
     // Generate files from templates
     await this.generateFromTemplates(project);
 
-    // Copy ABI files
-    await this.copyAbiFiles();
+    // ABI files are already in the target directory, no need to copy
 
     // Run external code generation tools
     if (!this.options.skipCodegen) {
@@ -66,7 +70,7 @@ export class SquidGenerator {
     const networks = new Set<string>();
 
     for (const contract of this.config.contracts) {
-      const abiPath = path.resolve(path.dirname(this.configPath), contract.abi);
+      const abiPath = path.resolve(this.options.outputDir, contract.abi);
       const abi = parseAbiFile(abiPath);
 
       const processedInstances: ProcessedInstance[] = contract.instances.map(instance => ({
@@ -293,17 +297,50 @@ export class SquidGenerator {
     };
   }
 
-  private async copyAbiFiles(): Promise<void> {
-    const abiDir = path.join(this.options.outputDir, 'abi');
-    await fs.ensureDir(abiDir);
+  private async cleanupExistingFiles(): Promise<void> {
+    console.log('🧹 Cleaning up existing generated files...');
 
-    for (const contract of this.config.contracts) {
-      const sourceAbiPath = path.resolve(path.dirname(this.configPath), contract.abi);
-      const targetAbiPath = path.join(abiDir, path.basename(contract.abi));
-      
-      if (await fs.pathExists(sourceAbiPath)) {
-        await fs.copy(sourceAbiPath, targetAbiPath);
+    // Files and directories that should be removed/cleaned
+    const filesToRemove = [
+      'package.json',
+      'tsconfig.json',
+      'jest.config.js',
+      'schema.graphql',
+      'squid.yaml'
+    ];
+
+    const dirsToClean = [
+      'src',
+      'lib',
+      'db/migrations'
+    ];
+
+    // Remove individual files
+    for (const file of filesToRemove) {
+      const filePath = path.join(this.options.outputDir, file);
+      if (await fs.pathExists(filePath)) {
+        await fs.remove(filePath);
       }
+    }
+
+    // Clean directories (but preserve abi directory and its contents)
+    for (const dir of dirsToClean) {
+      const dirPath = path.join(this.options.outputDir, dir);
+      if (await fs.pathExists(dirPath)) {
+        await fs.remove(dirPath);
+      }
+    }
+
+    // Remove generated files that might exist in src/abi (from squid-evm-typegen)
+    const srcAbiDir = path.join(this.options.outputDir, 'src', 'abi');
+    if (await fs.pathExists(srcAbiDir)) {
+      await fs.remove(srcAbiDir);
+    }
+
+    // Remove generated model files (from squid-typeorm-codegen)
+    const modelDir = path.join(this.options.outputDir, 'src', 'model');
+    if (await fs.pathExists(modelDir)) {
+      await fs.remove(modelDir);
     }
   }
 
