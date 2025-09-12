@@ -126,6 +126,11 @@ export class SquidGenerator {
     return match[1];
   }
 
+  private decapitalize(str: string): string {
+    if (!str) return str;
+    return str.charAt(0).toLowerCase() + str.slice(1);
+  }
+
   private async generateFromTemplates(project: GeneratedProject): Promise<void> {
     const templateFiles = await glob('**/*.mustache', { cwd: this.templatesDir });
 
@@ -151,8 +156,8 @@ export class SquidGenerator {
     // Generate templates for each contract and event
     for (const contract of project.contracts) {
       for (const event of contract.events) {
-        const contractNameLower = contract.name.toLowerCase();
-        const eventNameLower = event.name.toLowerCase();
+        const contractNameLower = this.decapitalize(contract.name);
+        const eventNameLower = this.decapitalize(event.name);
         
         // Replace placeholders in filename
         let outputFileName = templateFile
@@ -212,10 +217,10 @@ export class SquidGenerator {
       }
       
       const contracts = project.contracts.map(contract => {
-        const contractNameLower = contract.name.toLowerCase();
+        const contractNameLower = this.decapitalize(contract.name);
         
         const events = contract.events.map(event => {
-          const eventNameLower = event.name.toLowerCase();
+          const eventNameLower = this.decapitalize(event.name);
           
           const eventFields = event.abiEvent.inputs.map((input: any) => ({
             fieldName: input.name,
@@ -259,10 +264,10 @@ export class SquidGenerator {
 
     // For schema.graphql and other templates that need all contracts
     const allContracts = project.contracts.map(contract => {
-      const contractNameLower = contract.name.toLowerCase();
+      const contractNameLower = this.decapitalize(contract.name);
       
       const events = contract.events.map(event => {
-        const eventNameLower = event.name.toLowerCase();
+        const eventNameLower = this.decapitalize(event.name);
         
         const eventFields = event.abiEvent.inputs.map((input: any) => ({
           fieldName: input.name,
