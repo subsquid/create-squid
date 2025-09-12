@@ -21,7 +21,7 @@ describe('handle{{eventName}}s integration', () => {
     // Clear any existing data
   })
 
-  it('should process {{eventNameLower}}s and save them to the database', async () => {
+  it('should process {{eventName}} events and save them to the database', async () => {
     const decodedMainTestLog = {
 {{#eventFields}}
       {{fieldName}}: 'test{{fieldName}}',
