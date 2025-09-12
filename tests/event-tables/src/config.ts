@@ -25,7 +25,7 @@ import * as erc20Abi from './abi/erc20'
 import * as aavePoolAbi from './abi/aave-pool'
 
 import { handleTransfers } from './batchHandlers/tokens/transfer'
-import { handleLiquidationCalls } from './batchHandlers/aave-pool/liquidationCall'
+import { handleLiquidationCalls } from './batchHandlers/aavepool/liquidationCall'
 
 // Can vary by network/processor, but we'll use a single global value here.
 export const fieldSelection = {
