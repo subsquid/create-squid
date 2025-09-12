@@ -29,7 +29,7 @@ export async function handle{{eventName}}s(
     block: l.block.height,
     txnHash: l.transactionHash,
 {{#eventFields}}
-    {{fieldName}}: l.decoded.{{fieldName}},
+    {{fieldName}}: l.decoded.{{fieldName}}{{^last}},{{/last}}
 {{/eventFields}}
   }))
 

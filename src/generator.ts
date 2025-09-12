@@ -133,6 +133,16 @@ export class SquidGenerator {
     return str.charAt(0).toLowerCase() + str.slice(1);
   }
 
+  private camelCase(str: string): string {
+    if (!str) return str;
+    return str.charAt(0).toLowerCase() + str.slice(1);
+  }
+
+  private toCamelCase(str: string): string {
+    if (!str) return str;
+    return str.replace(/-(.)/g, (match, letter) => letter.toUpperCase());
+  }
+
   private async generateFromTemplates(project: GeneratedProject): Promise<void> {
     const templateFiles = await glob('**/*.mustache', { cwd: this.templatesDir, dot: true });
 
@@ -211,6 +221,15 @@ export class SquidGenerator {
     this.generatedFiles.add(relativePath);
   }
 
+  private extractShortNetworkName(rpcEndpoint: string): string {
+    // Extract network name from RPC_ETH_HTTP -> eth, RPC_ARBITRUM_ONE_HTTP -> arbitrum-one
+    const match = rpcEndpoint.match(/^RPC_(.+)_HTTP$/);
+    if (!match) {
+      throw new Error(`Invalid rpcEndpoint format: ${rpcEndpoint}`);
+    }
+    return match[1].toLowerCase().replace(/_/g, '-');
+  }
+
   private prepareTemplateData(project: GeneratedProject): any {
     const networks = project.networks.map(networkName => {
       const networkConfig = NETWORK_CONFIGS[networkName];
@@ -218,15 +237,21 @@ export class SquidGenerator {
         throw new Error(`Unknown network: ${networkName}`);
       }
       
+      const shortName = this.extractShortNetworkName(networkConfig.rpcEndpoint);
+      
       const contracts = project.contracts.map(contract => {
         const contractNameLower = this.decapitalize(contract.name);
+        const contractNameCamel = this.camelCase(contract.name);
+        const abiFileName = path.basename(contract.abiPath, '.json');
+        const abiImportName = this.toCamelCase(abiFileName);
         
         const events = contract.events.map(event => {
           const eventNameLower = this.decapitalize(event.name);
           
-          const eventFields = event.abiEvent.inputs.map((input: any) => ({
+          const eventFields = event.abiEvent.inputs.map((input: any, index: number, array: any[]) => ({
             fieldName: input.name,
-            fieldType: mapSolidityTypeToGraphQL(input.type)
+            fieldType: mapSolidityTypeToGraphQL(input.type),
+            last: index === array.length - 1
           }));
 
           return {
@@ -251,6 +276,9 @@ export class SquidGenerator {
         return {
           name: contract.name,
           contractNameLower,
+          contractNameCamel,
+          abiFileName,
+          abiImportName,
           events,
           instances,
           hasInstancesOnNetwork
@@ -258,8 +286,11 @@ export class SquidGenerator {
       });
 
       return {
-        ...networkConfig,
         name: networkName,
+        shortName,
+        gateway: networkConfig.gateway,
+        rpcEndpoint: networkConfig.rpcEndpoint,
+        finalityConfirmation: networkConfig.finalityConfirmation,
         contracts
       };
     });
@@ -267,13 +298,17 @@ export class SquidGenerator {
     // For schema.graphql and other templates that need all contracts
     const allContracts = project.contracts.map(contract => {
       const contractNameLower = this.decapitalize(contract.name);
+      const contractNameCamel = this.camelCase(contract.name);
+      const abiFileName = path.basename(contract.abiPath, '.json');
+      const abiImportName = this.toCamelCase(abiFileName);
       
       const events = contract.events.map(event => {
         const eventNameLower = this.decapitalize(event.name);
         
-        const eventFields = event.abiEvent.inputs.map((input: any) => ({
+        const eventFields = event.abiEvent.inputs.map((input: any, index: number, array: any[]) => ({
           fieldName: input.name,
-          fieldType: mapSolidityTypeToGraphQL(input.type)
+          fieldType: mapSolidityTypeToGraphQL(input.type),
+          last: index === array.length - 1
         }));
 
         return {
@@ -288,6 +323,9 @@ export class SquidGenerator {
       return {
         name: contract.name,
         contractNameLower,
+        contractNameCamel,
+        abiFileName,
+        abiImportName,
         events
       };
     });

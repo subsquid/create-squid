@@ -1,63 +1,76 @@
-import { handle{{eventName}}s } from './{{eventNameLower}}'
-import { createTestDatabase } from '../../testing/testDatabase'
-import { {{contractName}}{{eventName}} } from '../../model'
-import { ProcessorContext, DecodedLogWithContractMetadata } from '../../config'
-import { defaultObjects } from '../../testing/defaultObjects'
+import { Store } from '@subsquid/typeorm-store'
+import { setupTestDatabase, type TestDatabase } from '../../testing/testDatabase'
+import { createDefaultLog } from '../../testing/defaultObjects'
 
-describe('{{eventName}} handler', () => {
-  let ctx: ProcessorContext
-  let testDb: any
+import { handle{{eventName}}s } from './{{eventNameLower}}'
+
+describe('handle{{eventName}}s integration', () => {
+  let db: TestDatabase
+  let store: Store
 
   beforeAll(async () => {
-    testDb = await createTestDatabase()
-    ctx = testDb.ctx
+    db = await setupTestDatabase()
+    store = new Store(() => db.dataSource.manager)
   })
 
   afterAll(async () => {
-    await testDb.close()
+    await db.cleanup()
   })
 
   beforeEach(async () => {
-    await testDb.clear()
+    // Clear any existing data
   })
 
-  it('should handle {{eventName}} events', async () => {
-    const logs: DecodedLogWithContractMetadata[] = [
-      {
-        id: '0x123',
-        address: '0x456',
-        data: '0x',
-        topics: ['0x789'],
-        transactionHash: '0xabc',
-        block: {
-          height: 12345,
-          hash: '0xdef',
-          parentHash: '0xghi',
-          timestamp: 1234567890
-        },
-        contract: {
-          name: '{{contractName}}',
-          instanceName: 'test',
-          instanceAddress: '0x456'
-        },
-        decoded: {
+  it('should process {{eventNameLower}}s and save them to the database', async () => {
+    const decodedMainTestLog = {
 {{#eventFields}}
-          {{fieldName}}: defaultObjects.{{fieldType}}('{{fieldName}}'),
+      {{fieldName}}: 'test{{fieldName}}',
 {{/eventFields}}
-        }
-      }
-    ]
+    }
+    const mainTestLog = {
+      contract: {
+        name: '{{contractName}}',
+        instanceName: 'main',
+        instanceAddress: '0x1234567890123456789012345678901234567890'
+      },
+      decoded: decodedMainTestLog,
+      ...createDefaultLog()
+    }
+    mainTestLog.id = 'my{{eventNameLower}}logid'
+    mainTestLog.block.height = 11362580
+    mainTestLog.transactionHash = '0xmy{{eventNameLower}}transactionhash'
 
-    const result = await handle{{eventName}}s('ethereum-mainnet', ctx, logs, {})
+    // Minimal ProcessorContext mock
+    const ctx = { store } as any
+    const { {{eventNameLower}}s } = await handle{{eventName}}s(
+      'ethereum-mainnet',
+      ctx,
+      [mainTestLog],
+      {}
+    )
 
-    expect(result.{{eventNameLower}}s).toHaveLength(1)
-    expect(result.{{eventNameLower}}s[0]).toBeInstanceOf({{contractName}}{{eventName}})
-    expect(result.{{eventNameLower}}s[0].network).toBe('ethereum-mainnet')
-    expect(result.{{eventNameLower}}s[0].instanceAddress).toBe('0x456')
-    expect(result.{{eventNameLower}}s[0].block).toBe(12345)
-    expect(result.{{eventNameLower}}s[0].txnHash).toBe('0xabc')
+    expect({{eventNameLower}}s).toHaveLength(1)
+    expect({{eventNameLower}}s[0]).toMatchObject({
+      id: 'my{{eventNameLower}}logid',
+      block: 11362580,
+      ...decodedMainTestLog,
+      txnHash: '0xmy{{eventNameLower}}transactionhash',
+    })
+
+    const db{{eventName}}s = await db.dataSource
+      .createQueryBuilder()
+      .select('*')
+      .from('{{contractNameLower}}_main_{{eventNameLower}}', 'e')
+      .getRawMany()
+
+    expect(db{{eventName}}s).toHaveLength(1)
+    expect(db{{eventName}}s[0]).toMatchObject({
+      id: 'my{{eventNameLower}}logid',
+      block: 11362580,
+      txn_hash: '0xmy{{eventNameLower}}transactionhash',
 {{#eventFields}}
-    expect(result.{{eventNameLower}}s[0].{{fieldName}}).toBeDefined()
+      {{fieldName}}: decodedMainTestLog.{{fieldName}},
 {{/eventFields}}
+    })
   })
 })

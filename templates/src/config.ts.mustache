@@ -22,12 +22,12 @@ import {
 } from './types/extendedData'
 
 {{#contracts}}
-import * as {{contractNameLower}}Abi from './abi/{{contractNameLower}}'
+import * as {{abiImportName}}Abi from './abi/{{abiFileName}}'
 {{/contracts}}
 
 {{#contracts}}
 {{#events}}
-import { handle{{name}}s } from './batchHandlers/{{contractNameLower}}/{{eventNameLower}}'
+import { handle{{name}}s } from './batchHandlers/{{contractNameCamel}}/{{eventNameLower}}'
 {{/events}}
 {{/contracts}}
 
@@ -63,7 +63,7 @@ export type DecodedLogWithContractMetadata = _DecodedLogWithContractMetadata<typ
 export const config: FullConfig = {
 {{#networks}}
   '{{name}}': {
-    gateway: '{{gateway}}',
+    gateway: '{{{gateway}}}',
     rpcEndpoint: process.env.{{rpcEndpoint}},
     finalityConfirmation: {{finalityConfirmation}},
     // order of requests matters - handler execution will follow it
@@ -83,7 +83,7 @@ export const config: FullConfig = {
 {{#events}}
           {
             name: '{{name}}',
-            abiHelper: {{contractNameLower}}Abi.events.{{name}},
+            abiHelper: {{abiImportName}}Abi.events.{{name}},
             batchHandler: handle{{name}}s
           }
 {{/events}}
