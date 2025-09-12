@@ -102,5 +102,4 @@ describe('handleTransfers integration', () => {
       value: decodedSqdTestLog.value.toString()
     })
   })
-
 })
