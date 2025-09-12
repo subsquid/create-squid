@@ -1,6 +1,6 @@
 manifestVersion: subsquid.io/v0.1
 name: create-squid-ref-event-tables
-description: Reference squid for the split tables mode of the create-squid utility
+description: Reference squid for the one-table-per-event mode of the create-squid utility
 build: 
 deploy:
   addons:
@@ -17,7 +17,7 @@ deploy:
     cmd:
       - sqd
       - serve:prod
-scale:
-  addons:
-    postgres:
-      storage: 200G
+#scale:
+#  addons:
+#    postgres:
+#      storage: 200G
