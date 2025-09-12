@@ -111,8 +111,8 @@ export class SquidGenerator {
     }
 
     return {
-      name: this.options.projectName,
-      description: this.options.projectDescription,
+      name: this.config.name,
+      description: this.config.description,
       contracts,
       networks: Array.from(networks)
     };

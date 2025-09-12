@@ -1,4 +1,6 @@
 export interface CreateSquidConfig {
+  name: string;
+  description: string;
   style: 'batchHandlers';
   target: {
     type: 'postgres';

@@ -3,9 +3,10 @@
 import { Command } from 'commander';
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import * as yaml from 'js-yaml';
 import chalk from 'chalk';
 import { SquidGenerator } from './generator';
-import { GeneratorOptions } from './types';
+import { GeneratorOptions, CreateSquidConfig } from './types';
 
 const program = new Command();
 
@@ -18,8 +19,8 @@ program
   .command('generate')
   .description('Generate a squid project in an existing directory')
   .argument('<output>', 'Directory containing createSquid.yaml and ./abi folder')
-  .option('-n, --name <name>', 'Project name', 'my-squid')
-  .option('-d, --description <description>', 'Project description', 'A blockchain indexer project')
+  .option('-n, --name <name>', 'Project name (overrides config)')
+  .option('-d, --description <description>', 'Project description (overrides config)')
   .option('--skip-install', 'Skip npm install', false)
   .option('--skip-codegen', 'Skip code generation', false)
   .action(async (outputDir: string, options: any) => {
@@ -46,10 +47,14 @@ program
         process.exit(1);
       }
 
+      // Load config to get default name and description
+      const configContent = fs.readFileSync(configPath, 'utf8');
+      const config = yaml.load(configContent) as CreateSquidConfig;
+
       const generatorOptions: GeneratorOptions = {
         outputDir: resolvedOutputDir,
-        projectName: options.name,
-        projectDescription: options.description,
+        projectName: options.name || config.name,
+        projectDescription: options.description || config.description,
         skipInstall: options.skipInstall,
         skipCodegen: options.skipCodegen
       };
@@ -57,8 +62,8 @@ program
       console.log(chalk.blue('Generating squid project...'));
       console.log(chalk.gray(`Directory: ${resolvedOutputDir}`));
       console.log(chalk.gray(`Config: ${configPath}`));
-      console.log(chalk.gray(`Name: ${options.name}`));
-      console.log(chalk.gray(`Description: ${options.description}`));
+      console.log(chalk.gray(`Name: ${generatorOptions.projectName}`));
+      console.log(chalk.gray(`Description: ${generatorOptions.projectDescription}`));
 
       const generator = new SquidGenerator(configPath, generatorOptions);
       await generator.generate();
@@ -81,7 +86,9 @@ program
   .argument('[output]', 'Output file path', 'createSquid.yaml')
   .action(async (outputPath: string) => {
     try {
-      const sampleConfig = `style: batchHandlers
+      const sampleConfig = `name: my-squid
+description: A blockchain indexer project
+style: batchHandlers
 target:
   type: postgres
 contracts:

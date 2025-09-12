@@ -26,9 +26,58 @@ describe('SquidGenerator', () => {
     await fs.ensureDir(testOutputDir);
     await fs.ensureDir(path.join(testOutputDir, 'abi'));
 
-    // Copy test config file
-    const sourceConfigPath = path.join(__dirname, '..', '..', 'tests', 'event-tables', 'createSquid.yaml');
-    await fs.copy(sourceConfigPath, testConfigPath);
+    // Create custom test config file with expected name and description
+    const testConfig = {
+      name: 'test-squid',
+      description: 'Test squid project',
+      style: 'batchHandlers',
+      target: {
+        type: 'postgres'
+      },
+      contracts: [
+        {
+          name: 'Tokens',
+          abi: './abi/erc20.json',
+          instances: [
+            {
+              address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+              name: 'usdc',
+              network: 'ethereum-mainnet',
+              range: {
+                from: 6082465
+              }
+            },
+            {
+              address: '0x1337420dED5ADb9980CFc35f8f2B054ea86f8aB1',
+              name: 'sqd',
+              network: 'arbitrum-one',
+              range: {
+                from: 194120655
+              }
+            }
+          ],
+          events: ['Transfer(address,address,uint256)']
+        },
+        {
+          name: 'AavePool',
+          abi: './abi/aave-pool.json',
+          instances: [
+            {
+              address: '0x02D84abD89Ee9DB409572f19B6e1596c301F3c81',
+              proxy: '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9',
+              name: 'main',
+              network: 'ethereum-mainnet',
+              range: {
+                from: 11362579
+              }
+            }
+          ],
+          events: ['LiquidationCall(address,address,address,uint256,uint256,address,bool)']
+        }
+      ]
+    };
+
+    await fs.writeFile(testConfigPath, yaml.dump(testConfig));
 
     // Copy test ABI files
     const sourceAbiDir = path.join(__dirname, '..', '..', 'tests', 'event-tables', 'abi');
