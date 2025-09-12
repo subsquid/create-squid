@@ -21,5 +21,5 @@ type AavePoolLiquidationCall @entity {
   debtToCover: BigInt!
   liquidatedCollateralAmount: BigInt!
   liquidator: String!
-  receiveAToken: Boolean
+  receiveAToken: Boolean!
 }

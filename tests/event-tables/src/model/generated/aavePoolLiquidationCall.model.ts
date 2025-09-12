@@ -39,6 +39,6 @@ export class AavePoolLiquidationCall {
     @StringColumn_({nullable: false})
     liquidator!: string
 
-    @BooleanColumn_({nullable: true})
-    receiveAToken!: boolean | undefined | null
+    @BooleanColumn_({nullable: false})
+    receiveAToken!: boolean
 }
