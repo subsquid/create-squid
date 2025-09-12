@@ -33,8 +33,8 @@ export const fieldSelection = {
     address: true,
     data: true,
     topics: true,
-    transactionHash: true
-  }
+    transactionHash: true,
+  },
 } as const // Without "as const" downstream types will break.
 // Temporarily designate "as FieldSelection" to gain IDE field suggestions.
 
@@ -66,36 +66,36 @@ export const config: FullConfig = {
       {
         contract: 'Tokens',
         addresses: {
-          'usdc': '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'.toLowerCase()
+          'usdc': '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'.toLowerCase(),
         },
         events: [
           {
             name: 'Transfer',
             abiHelper: erc20Abi.events.Transfer,
-            batchHandler: handleTransfers
-          }
+            batchHandler: handleTransfers,
+          },
         ],
         range: {
-          from: 6082465
-        }
+          from: 6082465,
+        },
       },
       {
         contract: 'AavePool',
         addresses: {
-          'main': '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'.toLowerCase()
+          'main': '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'.toLowerCase(),
         },
         events: [
           {
             name: 'LiquidationCall',
             abiHelper: aavePoolAbi.events.LiquidationCall,
-            batchHandler: handleLiquidationCalls
-          }
+            batchHandler: handleLiquidationCalls,
+          },
         ],
         range: {
-          from: 11362579
-        }
-      }
-    ]
+          from: 11362579,
+        },
+      },
+    ],
   },
   'arbitrum-one': {
     gateway: 'https://v2.archive.subsquid.io/network/arbitrum-one',
@@ -105,19 +105,19 @@ export const config: FullConfig = {
       {
         contract: 'Tokens',
         addresses: {
-          'sqd': '0x1337420dED5ADb9980CFc35f8f2B054ea86f8aB1'.toLocaleLowerCase()
+          'sqd': '0x1337420dED5ADb9980CFc35f8f2B054ea86f8aB1'.toLocaleLowerCase(),
         },
         events: [
           {
             name: 'Transfer',
             abiHelper: erc20Abi.events.Transfer,
-            batchHandler: handleTransfers
-          }
+            batchHandler: handleTransfers,
+          },
         ],
         range: {
-          from: 194120655
-        }
-      }
-    ]
-  }
+          from: 194120655,
+        },
+      },
+    ],
+  },
 }
