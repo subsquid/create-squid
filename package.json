@@ -11,6 +11,9 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "jest",
+    "test:unit": "jest",
+    "test:integration": "./test-integration.sh",
+    "test:all": "npm run test:unit && npm run test:integration",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

@@ -1,9 +1,9 @@
-import { parseAbiFile, findEventsInAbi, findEventByName, findEventBySignature, generateEventSignature, mapSolidityTypeToGraphQL } from '../abi-parser';
+import { parseAbiFile, findEventsInAbi, findEventByName, findEventBySignature, generateEventSignature, mapSolidityTypeToGraphQL } from './abi-parser';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
 describe('ABI Parser', () => {
-  const testAbiPath = path.join(__dirname, '..', '..', 'tests', 'event-tables', 'abi', 'erc20.json');
+  const testAbiPath = path.join(__dirname, '..', 'tests', 'event-tables', 'abi', 'erc20.json');
 
   beforeAll(async () => {
     // Ensure test ABI file exists
