@@ -35,7 +35,7 @@ export class SquidGenerator {
   }
 
   public async generate(): Promise<void> {
-    console.log('🚀 Starting squid project generation...');
+    console.log('Starting squid project generation...');
 
     // Ensure output directory exists (should already exist with createSquid.yaml and ./abi)
     if (!await fs.pathExists(this.options.outputDir)) {
@@ -63,7 +63,7 @@ export class SquidGenerator {
       await this.installDependencies();
     }
 
-    console.log('✅ Squid project generated successfully!');
+    console.log('Squid project generated successfully!');
   }
 
   private async processConfig(): Promise<GeneratedProject> {
@@ -303,7 +303,7 @@ export class SquidGenerator {
   }
 
   private async cleanupExistingFiles(): Promise<void> {
-    console.log('🧹 Cleaning up existing generated files...');
+    console.log('Cleaning up existing generated files...');
 
     // Files that should always be preserved
     const preserveFiles = new Set([
@@ -400,12 +400,12 @@ export class SquidGenerator {
         }
       }
     } catch (error) {
-      console.warn('⚠️  Warning: Could not scan directory for cleanup:', error);
+      console.warn('Warning: Could not scan directory for cleanup:', error);
     }
   }
 
   private async runCodeGeneration(): Promise<void> {
-    console.log('🔧 Running code generation...');
+    console.log('Running code generation...');
 
     const srcDir = path.join(this.options.outputDir, 'src');
     const abiDir = path.join(this.options.outputDir, 'abi');
@@ -434,7 +434,7 @@ export class SquidGenerator {
       // Track the entire abi directory as generated
       this.generatedFiles.add('src/abi');
     } catch (error) {
-      console.warn('⚠️  Warning: Failed to run squid-evm-typegen:', error);
+      console.warn('Warning: Failed to run squid-evm-typegen:', error);
     }
 
     // Generate TypeORM models
@@ -447,12 +447,12 @@ export class SquidGenerator {
       // Track the entire model directory as generated
       this.generatedFiles.add('src/model');
     } catch (error) {
-      console.warn('⚠️  Warning: Failed to run squid-typeorm-codegen:', error);
+      console.warn('Warning: Failed to run squid-typeorm-codegen:', error);
     }
   }
 
   private async installDependencies(): Promise<void> {
-    console.log('📦 Installing dependencies...');
+    console.log('Installing dependencies...');
     
     try {
       execSync('npm install', {
@@ -472,7 +472,7 @@ export class SquidGenerator {
         this.generatedFiles.add('node_modules');
       }
     } catch (error) {
-      console.warn('⚠️  Warning: Failed to install dependencies:', error);
+      console.warn('Warning: Failed to install dependencies:', error);
     }
   }
 }

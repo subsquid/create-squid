@@ -28,21 +28,21 @@ program
       
       // Validate output directory exists
       if (!await fs.pathExists(resolvedOutputDir)) {
-        console.error(chalk.red(`❌ Directory does not exist: ${resolvedOutputDir}`));
+        console.error(chalk.red(`Directory does not exist: ${resolvedOutputDir}`));
         process.exit(1);
       }
 
       // Validate createSquid.yaml exists in the directory
       const configPath = path.join(resolvedOutputDir, 'createSquid.yaml');
       if (!await fs.pathExists(configPath)) {
-        console.error(chalk.red(`❌ createSquid.yaml not found in: ${resolvedOutputDir}`));
+        console.error(chalk.red(`createSquid.yaml not found in: ${resolvedOutputDir}`));
         process.exit(1);
       }
 
       // Validate abi directory exists
       const abiDir = path.join(resolvedOutputDir, 'abi');
       if (!await fs.pathExists(abiDir)) {
-        console.error(chalk.red(`❌ ./abi directory not found in: ${resolvedOutputDir}`));
+        console.error(chalk.red(`./abi directory not found in: ${resolvedOutputDir}`));
         process.exit(1);
       }
 
@@ -54,7 +54,7 @@ program
         skipCodegen: options.skipCodegen
       };
 
-      console.log(chalk.blue('🚀 Generating squid project...'));
+      console.log(chalk.blue('Generating squid project...'));
       console.log(chalk.gray(`Directory: ${resolvedOutputDir}`));
       console.log(chalk.gray(`Config: ${configPath}`));
       console.log(chalk.gray(`Name: ${options.name}`));
@@ -63,14 +63,14 @@ program
       const generator = new SquidGenerator(configPath, generatorOptions);
       await generator.generate();
 
-      console.log(chalk.green('✅ Project generated successfully!'));
+      console.log(chalk.green('Project generated successfully!'));
       console.log(chalk.blue('\nNext steps:'));
       console.log(chalk.gray(`  cd ${resolvedOutputDir}`));
       console.log(chalk.gray('  npm run build'));
       console.log(chalk.gray('  npm test'));
 
     } catch (error) {
-      console.error(chalk.red('❌ Error generating project:'), error);
+      console.error(chalk.red('Error generating project:'), error);
       process.exit(1);
     }
   });
@@ -109,12 +109,12 @@ contracts:
 `;
 
       await fs.writeFile(outputPath, sampleConfig);
-      console.log(chalk.green(`✅ Sample configuration created: ${outputPath}`));
+      console.log(chalk.green(`Sample configuration created: ${outputPath}`));
       console.log(chalk.blue('\nEdit the configuration file, add ABI files to ./abi folder, and then run:'));
       console.log(chalk.gray(`  create-squid generate .`));
 
     } catch (error) {
-      console.error(chalk.red('❌ Error creating sample config:'), error);
+      console.error(chalk.red('Error creating sample config:'), error);
       process.exit(1);
     }
   });
