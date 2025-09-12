@@ -17,11 +17,11 @@ describe('handleTransfers integration', () => {
     await db.cleanup()
   })
 
-  it('should process transfers and save them to the database', async () => {
+  it('should process Transfer events and save them to the database', async () => {
     const decodedUsdcTestLog = {
       from: '0xfromusdc',
       to: '0xtousdc',
-      value: BigInt(250)
+      value: BigInt(250) // random integer under 1000 that differs from values on tests events from all other instances
     }
     const usdcTestLog = {
       contract: {
@@ -103,4 +103,4 @@ describe('handleTransfers integration', () => {
     })
   })
 
-}) 
+})

@@ -17,21 +17,21 @@ describe('handleLiquidationCalls integration', () => {
     await db.cleanup()
   })
 
-  it('should process liquidation calls and save them to the database', async () => {
+  it('should process LiquidationCall events and save them to the database', async () => {
     const decodedMainTestLog = {
-      collateralAsset: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI
-      debtAsset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
-      user: '0x1234567890123456789012345678901234567890',
-      debtToCover: BigInt(1000000000), // 1000 USDC (6 decimals)
-      liquidatedCollateralAmount: BigInt(2000000000000000000000), // 2000 DAI (18 decimals)
-      liquidator: '0x9876543210987654321098765432109876543210',
+      collateralAsset: '0xcollateralAssetMain',
+      debtAsset: '0xdebtAssetMain',
+      user: '0xuserMain',
+      debtToCover: BigInt(1000000000),
+      liquidatedCollateralAmount: BigInt(2000000000000000000000),
+      liquidator: '0xliqudatorMain',
       receiveAToken: true
     }
     const mainTestLog = {
       contract: {
         name: 'AavePool',
         instanceName: 'main',
-        instanceAddress: '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'
+        instanceAddress: '0xmain'
       },
       decoded: decodedMainTestLog,
       ...createDefaultLog()
