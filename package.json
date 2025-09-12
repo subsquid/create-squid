@@ -1,7 +1,7 @@
 {
-  "name": "create-squid-generator",
-  "version": "1.0.0",
-  "description": "A TypeScript package for automatically generating blockchain indexer projects",
+  "name": "create-squid",
+  "version": "0.0.0",
+  "description": "Automatically generate Subsquid blockchain indexers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {

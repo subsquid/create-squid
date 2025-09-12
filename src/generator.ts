@@ -12,7 +12,12 @@ import {
   ProcessedEvent,
   GeneratorOptions
 } from './types';
-import { parseAbiFile, findEventByName, generateEventSignature, mapSolidityTypeToGraphQL } from './abi-parser';
+import {
+  parseAbiFile,
+  findEventByName,
+  generateEventSignature,
+  mapSolidityTypeToGraphQL
+} from './abi-parser';
 import { NETWORK_CONFIGS } from './network-configs';
 
 export class SquidGenerator {
@@ -48,19 +53,16 @@ export class SquidGenerator {
     // Generate files from templates
     await this.generateFromTemplates(project);
 
-    // ABI files are already in the target directory, no need to copy
-
-    // Run external code generation tools
-    if (!this.options.skipCodegen) {
-      await this.runCodeGeneration();
-    }
-
     // Clean up any files that were not generated
     await this.cleanupExistingFiles();
 
     // Install dependencies
     if (!this.options.skipInstall) {
       await this.installDependencies();
+      // Run external code generation tools
+      if (!this.options.skipCodegen) {
+        await this.runCodeGeneration();
+      }
     }
 
     console.log('Squid project generated successfully!');
@@ -426,7 +428,7 @@ export class SquidGenerator {
     const abiGlob = abiFiles.map(file => `./abi/${file}`).join(' ');
     
     try {
-      execSync(`npx squid-evm-typegen ./src/abi ${abiGlob} --multicall`, {
+      execSync(`npx @subsquid/evm-typegen ./src/abi ${abiGlob} --multicall`, {
         cwd: this.options.outputDir,
         stdio: 'inherit'
       });
@@ -439,7 +441,7 @@ export class SquidGenerator {
 
     // Generate TypeORM models
     try {
-      execSync('npx squid-typeorm-codegen', {
+      execSync('npx @subsquid/typeorm-codegen', {
         cwd: this.options.outputDir,
         stdio: 'inherit'
       });
