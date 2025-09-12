@@ -60,10 +60,11 @@ export class SquidGenerator {
     // Install dependencies
     if (!this.options.skipInstall) {
       await this.installDependencies();
-      // Run external code generation tools
-      if (!this.options.skipCodegen) {
-        await this.runCodeGeneration();
-      }
+    }
+
+    // Run external code generation tools
+    if (!this.options.skipCodegen) {
+      await this.runCodeGeneration();
     }
 
     console.log('Squid project generated successfully!');
@@ -133,7 +134,7 @@ export class SquidGenerator {
   }
 
   private async generateFromTemplates(project: GeneratedProject): Promise<void> {
-    const templateFiles = await glob('**/*.mustache', { cwd: this.templatesDir });
+    const templateFiles = await glob('**/*.mustache', { cwd: this.templatesDir, dot: true });
 
     for (const templateFile of templateFiles) {
       const templatePath = path.join(this.templatesDir, templateFile);
@@ -460,10 +461,10 @@ export class SquidGenerator {
   }
 
   private async installDependencies(): Promise<void> {
-    console.log('Installing dependencies...');
+    console.log('Installing dependencies (may take a while)...');
     
     try {
-      execSync('npm install', {
+      execSync('npm install --progress=false', {
         cwd: this.options.outputDir,
         stdio: 'inherit'
       });

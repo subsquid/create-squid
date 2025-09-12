@@ -19,7 +19,7 @@ program
   .action(async (options: any) => {
     try {
       const cwd = process.cwd();
-      
+
       // Validate createSquid.yaml exists in CWD
       const configPath = path.join(cwd, 'createSquid.yaml');
       if (!await fs.pathExists(configPath)) {

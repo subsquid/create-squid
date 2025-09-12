@@ -1,8 +1,34 @@
-export const defaultObjects = {
-  String: (field: string) => `test-${field}`,
-  Int: (field: string) => 12345,
-  BigInt: (field: string) => BigInt('12345678901234567890'),
-  Boolean: (field: string) => true,
-  Bytes: (field: string) => '0x1234567890abcdef',
-  Address: (field: string) => '0x1234567890123456789012345678901234567890'
-}
+import { Log, Transaction, BlockHeader } from '../config'
+
+export const createDefaultBlockHeader: () => BlockHeader = () => ({
+  id: 'defaultBlockId',
+  hash: 'defaultBlockHash',
+  parentHash: 'defaultParentBlockHash',
+  timestamp: 111,
+  height: 11
+})
+
+export const createDefaultTransaction: () => Transaction = () => ({
+  id: 'defaultTransactionId',
+  block: createDefaultBlockHeader(),
+  transactionIndex: 22,
+  hash: 'defaultTransactionHash',
+  from: 'defaultTransactionFrom',
+  to: 'defaultTransactionTo',
+  logs: [],
+  stateDiffs: [],
+  traces: []
+})
+
+export const createDefaultLog: () => Log = () => ({
+  id: 'defaultLogId',
+  block: createDefaultBlockHeader(),
+  transactionIndex: 33,
+  logIndex: 333,
+  address: 'defaultLogAddress',
+  data: 'defaultLogData',
+  getTransaction: () => createDefaultTransaction(),
+  topics: [],
+  transactionHash: 'defaultTransactionHashFromLog',
+  transaction: undefined
+})

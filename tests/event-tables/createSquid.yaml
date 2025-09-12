@@ -1,3 +1,5 @@
+name: create-squid-ref-event-tables
+description: Reference squid for the one-table-per-event mode of the create-squid utility
 style: batchHandlers
 target:
   type: postgres

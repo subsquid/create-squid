@@ -1,5 +1,6 @@
 {
-  "name": "squid-evm-template",
+  "name": "create-squid-ref-event-tables",
+  "description": "Reference squid for the one-table-per-event mode of the create-squid utility",
   "private": true,
   "scripts": {
     "build": "rm -rf lib && tsc",
