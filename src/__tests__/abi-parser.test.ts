@@ -1,4 +1,4 @@
-import { parseAbiFile, findEventsInAbi, findEventByName, generateEventSignature, mapSolidityTypeToGraphQL } from '../abi-parser';
+import { parseAbiFile, findEventsInAbi, findEventByName, findEventBySignature, generateEventSignature, mapSolidityTypeToGraphQL } from '../abi-parser';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
@@ -49,6 +49,38 @@ describe('ABI Parser', () => {
       const nonExistentEvent = findEventByName(abi, 'NonExistentEvent');
       
       expect(nonExistentEvent).toBeUndefined();
+    });
+  });
+
+  describe('findEventBySignature', () => {
+    it('should find specific event by full signature', () => {
+      const abi = parseAbiFile(testAbiPath);
+      const transferEvent = findEventBySignature(abi, 'Transfer(address,address,uint256)');
+      
+      expect(transferEvent).toBeDefined();
+      expect(transferEvent?.name).toBe('Transfer');
+      expect(transferEvent?.type).toBe('event');
+    });
+
+    it('should return undefined for non-existent signature', () => {
+      const abi = parseAbiFile(testAbiPath);
+      const nonExistentEvent = findEventBySignature(abi, 'NonExistentEvent(address)');
+      
+      expect(nonExistentEvent).toBeUndefined();
+    });
+
+    it('should return undefined for signature with wrong parameters', () => {
+      const abi = parseAbiFile(testAbiPath);
+      const wrongSignatureEvent = findEventBySignature(abi, 'Transfer(address,uint256)');
+      
+      expect(wrongSignatureEvent).toBeUndefined();
+    });
+
+    it('should return undefined for signature with wrong parameter types', () => {
+      const abi = parseAbiFile(testAbiPath);
+      const wrongTypesEvent = findEventBySignature(abi, 'Transfer(address,address,string)');
+      
+      expect(wrongTypesEvent).toBeUndefined();
     });
   });
 

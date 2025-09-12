@@ -15,6 +15,7 @@ import {
 import {
   parseAbiFile,
   findEventByName,
+  findEventBySignature,
   generateEventSignature,
   mapSolidityTypeToGraphQL
 } from './abi-parser';
@@ -85,13 +86,13 @@ export class SquidGenerator {
       }));
 
       const processedEvents: ProcessedEvent[] = contract.events.map(eventSignature => {
-        const eventName = this.extractEventName(eventSignature);
-        const abiEvent = findEventByName(abi, eventName);
+        const abiEvent = findEventBySignature(abi, eventSignature);
         
         if (!abiEvent) {
-          throw new Error(`Event ${eventName} not found in ABI ${contract.abi}`);
+          throw new Error(`Event with signature ${eventSignature} not found in ABI ${contract.abi}`);
         }
 
+        const eventName = this.extractEventName(eventSignature);
         return {
           name: eventName,
           signature: eventSignature,

@@ -159,8 +159,8 @@ describe('SquidGenerator', () => {
       expect(await fs.pathExists(path.join(testOutputDir, 'src', 'batchHandlers', 'tokens', 'transfer.int.test.ts'))).toBe(true);
 
       // Check for LiquidationCall handler
-      expect(await fs.pathExists(path.join(testOutputDir, 'src', 'batchHandlers', 'aavepool', 'liquidationcall.ts'))).toBe(true);
-      expect(await fs.pathExists(path.join(testOutputDir, 'src', 'batchHandlers', 'aavepool', 'liquidationcall.int.test.ts'))).toBe(true);
+      expect(await fs.pathExists(path.join(testOutputDir, 'src', 'batchHandlers', 'aavePool', 'liquidationCall.ts'))).toBe(true);
+      expect(await fs.pathExists(path.join(testOutputDir, 'src', 'batchHandlers', 'aavePool', 'liquidationCall.int.test.ts'))).toBe(true);
     });
 
     it('should clean up existing generated files before generating new ones', async () => {

@@ -41,6 +41,11 @@ export function findEventByName(abi: AbiItem[], eventName: string): AbiEvent | u
   return events.find(event => event.name === eventName);
 }
 
+export function findEventBySignature(abi: AbiItem[], eventSignature: string): AbiEvent | undefined {
+  const events = findEventsInAbi(abi);
+  return events.find(event => generateEventSignature(event) === eventSignature);
+}
+
 export function generateEventSignature(event: AbiEvent): string {
   const inputTypes = event.inputs.map(input => input.type).join(',');
   return `${event.name}(${inputTypes})`;
