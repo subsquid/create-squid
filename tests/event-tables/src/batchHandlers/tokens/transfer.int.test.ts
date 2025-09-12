@@ -27,10 +27,10 @@ describe('handleTransfers integration', () => {
       contract: {
         name: 'Tokens',
         instanceName: 'usdc',
-        instanceAddress: '0xusdc'
+        instanceAddress: '0xusdc',
       },
       decoded: decodedUsdcTestLog,
-      ...createDefaultLog()
+      ...createDefaultLog(),
     }
     usdcTestLog.id = 'myusdclogid'
     usdcTestLog.block.height = 77
@@ -39,16 +39,16 @@ describe('handleTransfers integration', () => {
     const decodedSqdTestLog = {
       from: '0xfromsqd',
       to: '0xtosqd',
-      value: BigInt(520)
+      value: BigInt(520),
     }
     const sqdTestLog = {
       contract: {
         name: 'Tokens',
         instanceName: 'sqd',
-        instanceAddress: '0xsqd'
+        instanceAddress: '0xsqd',
       },
       decoded: decodedSqdTestLog,
-      ...createDefaultLog()
+      ...createDefaultLog(),
     }
     sqdTestLog.id = 'mysqdlogid'
     sqdTestLog.block.height = 9900
@@ -91,7 +91,7 @@ describe('handleTransfers integration', () => {
       txn_hash: '0xmyusdctransactionhashfromlog',
       from: decodedUsdcTestLog.from,
       to: decodedUsdcTestLog.to,
-      value: decodedUsdcTestLog.value.toString()
+      value: decodedUsdcTestLog.value.toString(),
     })
     expect(dbTransfers[1]).toMatchObject({
       id: 'mysqdlogid',
@@ -99,7 +99,7 @@ describe('handleTransfers integration', () => {
       txn_hash: '0xmysqdtransactionhashfromlog',
       from: decodedSqdTestLog.from,
       to: decodedSqdTestLog.to,
-      value: decodedSqdTestLog.value.toString()
+      value: decodedSqdTestLog.value.toString(),
     })
   })
 })

@@ -25,16 +25,16 @@ describe('handleLiquidationCalls integration', () => {
       debtToCover: BigInt(1000000000),
       liquidatedCollateralAmount: BigInt(2000000000000000000000),
       liquidator: '0xliqudatorMain',
-      receiveAToken: true
+      receiveAToken: true,
     }
     const mainTestLog = {
       contract: {
         name: 'AavePool',
         instanceName: 'main',
-        instanceAddress: '0xmain'
+        instanceAddress: '0xmain',
       },
       decoded: decodedMainTestLog,
-      ...createDefaultLog()
+      ...createDefaultLog(),
     }
     mainTestLog.id = 'myliquidationcalllogid'
     mainTestLog.block.height = 11362580
@@ -46,7 +46,7 @@ describe('handleLiquidationCalls integration', () => {
       'ethereum-mainnet',
       ctx,
       [mainTestLog],
-      { transfers: [] }
+      { transfers: [] },
     )
 
     expect(liquidationCalls).toHaveLength(1)
@@ -74,7 +74,7 @@ describe('handleLiquidationCalls integration', () => {
       debt_to_cover: decodedMainTestLog.debtToCover.toString(),
       liquidated_collateral_amount: decodedMainTestLog.liquidatedCollateralAmount.toString(),
       liquidator: decodedMainTestLog.liquidator,
-      receive_a_token: decodedMainTestLog.receiveAToken
+      receive_a_token: decodedMainTestLog.receiveAToken,
     })
   })
 })
