@@ -429,6 +429,7 @@ async function prepareNetworkBasedTemplateData(project: GeneratedProject): Promi
       rpcEndpoint: networkConfig.rpcEndpoint,
       finalityConfirmation: networkConfig.finalityConfirmation,
       publicRpcUrl: networkConfig.publicRpcUrl,
+      rawRpcAbbreviation: networkConfig.rawRpcAbbreviation,
       contracts,
       last: index === project.networks.length - 1
     };

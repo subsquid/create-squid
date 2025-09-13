@@ -80,9 +80,12 @@ async function fetchNetworkConfigs(): Promise<Record<string, NetworkInfo>> {
       // Get gateway URL from first provider
       const gateway = archive.providers[0]?.dataSourceUrl || '';
 
-      // Build RPC endpoint string
+      // Build RPC endpoint string and store raw abbreviation
       let rpcEndpoint: string;
+      let rawRpcAbbreviation: string | null = null;
+      
       if (rpcLore?.cloudRpcId) {
+        rawRpcAbbreviation = rpcLore.cloudRpcId;
         rpcEndpoint = `RPC_${toMacroCase(rpcLore.cloudRpcId)}_HTTP`;
       } else {
         rpcEndpoint = 'null';
@@ -96,7 +99,8 @@ async function fetchNetworkConfigs(): Promise<Record<string, NetworkInfo>> {
         gateway,
         rpcEndpoint,
         finalityConfirmation,
-        publicRpcUrl
+        publicRpcUrl,
+        rawRpcAbbreviation
       };
     }
 

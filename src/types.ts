@@ -63,6 +63,7 @@ export interface NetworkInfo {
   rpcEndpoint: string;
   finalityConfirmation: number;
   publicRpcUrl: string;
+  rawRpcAbbreviation: string | null;
 }
 
 export interface GeneratorOptions {
@@ -124,6 +125,7 @@ export interface NetworkTemplateData {
   rpcEndpoint: string;
   finalityConfirmation: number;
   publicRpcUrl: string;
+  rawRpcAbbreviation: string | null;
   contracts: ProcessedContractForTemplate[];
   last: boolean;
 }
