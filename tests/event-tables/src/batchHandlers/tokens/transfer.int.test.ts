@@ -1,6 +1,10 @@
 import { Store } from '@subsquid/typeorm-store'
-import { setupTestDatabase, type TestDatabase } from '../../testing/testDatabase'
-import { createDefaultLog } from '../../testing/defaultObjects'
+import {
+  setupTestDatabase,
+  type TestDatabase,
+  createDefaultLog,
+  miniHash
+} from '../../testing'
 
 import { handleTransfers } from './transfer'
 
@@ -18,10 +22,12 @@ describe('handleTransfers integration', () => {
   })
 
   it('should process Transfer events and save them to the database', async () => {
+    let lognum = 0
+
     const decodedUsdcTestLog = {
       from: '0xfromusdc',
       to: '0xtousdc',
-      value: BigInt(250) // random integer under 1000 that differs from values on tests events from all other instances
+      value: BigInt(miniHash('usdc' + 'value'))
     }
     const usdcTestLog = {
       contract: {
@@ -32,14 +38,15 @@ describe('handleTransfers integration', () => {
       decoded: decodedUsdcTestLog,
       ...createDefaultLog(),
     }
-    usdcTestLog.id = 'myusdclogid'
-    usdcTestLog.block.height = 77
+    usdcTestLog.id = lognum.toString()
+    lognum += 1
+    usdcTestLog.block.height = miniHash('usdc' + 'height')
     usdcTestLog.transactionHash = '0xmyusdctransactionhashfromlog'
 
     const decodedSqdTestLog = {
       from: '0xfromsqd',
       to: '0xtosqd',
-      value: BigInt(520),
+      value: BigInt(miniHash('sqd' + 'value')),
     }
     const sqdTestLog = {
       contract: {
@@ -50,8 +57,9 @@ describe('handleTransfers integration', () => {
       decoded: decodedSqdTestLog,
       ...createDefaultLog(),
     }
-    sqdTestLog.id = 'mysqdlogid'
-    sqdTestLog.block.height = 9900
+    sqdTestLog.id = lognum.toString()
+    lognum += 1
+    sqdTestLog.block.height = miniHash('sqd' + 'height')
     sqdTestLog.transactionHash = '0xmysqdtransactionhashfromlog'
 
     // Minimal ProcessorContext mock
@@ -65,14 +73,14 @@ describe('handleTransfers integration', () => {
 
     expect(transfers).toHaveLength(2)
     expect(transfers[0]).toMatchObject({
-      id: 'myusdclogid',
-      block: 77,
+      id: usdcTestLog.id,
+      block: usdcTestLog.block.height,
       ...decodedUsdcTestLog,
       txnHash: '0xmyusdctransactionhashfromlog',
     })
     expect(transfers[1]).toMatchObject({
-      id: 'mysqdlogid',
-      block: 9900,
+      id: sqdTestLog.id,
+      block: sqdTestLog.block.height,
       ...decodedSqdTestLog,
       txnHash: '0xmysqdtransactionhashfromlog',
     })
@@ -80,22 +88,22 @@ describe('handleTransfers integration', () => {
     const dbTransfers = await db.dataSource
       .createQueryBuilder()
       .select('*')
-      .from('tokens_usdc_transfer', 't')
-      .addOrderBy('block', 'ASC')
+      .from('tokens_transfer', 't')
+      .addOrderBy('id::int', 'ASC')
       .getRawMany()
 
     expect(dbTransfers).toHaveLength(2)
     expect(dbTransfers[0]).toMatchObject({
-      id: 'myusdclogid',
-      block: 77,
+      id: usdcTestLog.id,
+      block: usdcTestLog.block.height,
       txn_hash: '0xmyusdctransactionhashfromlog',
       from: decodedUsdcTestLog.from,
       to: decodedUsdcTestLog.to,
       value: decodedUsdcTestLog.value.toString(),
     })
     expect(dbTransfers[1]).toMatchObject({
-      id: 'mysqdlogid',
-      block: 9900,
+      id: sqdTestLog.id,
+      block: sqdTestLog.block.height,
       txn_hash: '0xmysqdtransactionhashfromlog',
       from: decodedSqdTestLog.from,
       to: decodedSqdTestLog.to,

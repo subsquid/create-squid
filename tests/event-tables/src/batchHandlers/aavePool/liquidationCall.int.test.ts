@@ -1,6 +1,10 @@
 import { Store } from '@subsquid/typeorm-store'
-import { setupTestDatabase, type TestDatabase } from '../../testing/testDatabase'
-import { createDefaultLog } from '../../testing/defaultObjects'
+import {
+  setupTestDatabase,
+  type TestDatabase,
+  createDefaultLog,
+  miniHash
+} from '../../testing'
 
 import { handleLiquidationCalls } from './liquidationCall'
 
@@ -18,12 +22,14 @@ describe('handleLiquidationCalls integration', () => {
   })
 
   it('should process LiquidationCall events and save them to the database', async () => {
+    let lognum = 0
+
     const decodedMainTestLog = {
       collateralAsset: '0xcollateralAssetMain',
       debtAsset: '0xdebtAssetMain',
       user: '0xuserMain',
-      debtToCover: BigInt(1000000000),
-      liquidatedCollateralAmount: BigInt(2000000000000000000000),
+      debtToCover: BigInt(miniHash('main' + 'debtToCover')),
+      liquidatedCollateralAmount: BigInt(miniHash('main' + 'liquidatedCollateralAmount')),
       liquidator: '0xliqudatorMain',
       receiveAToken: true,
     }
@@ -36,9 +42,10 @@ describe('handleLiquidationCalls integration', () => {
       decoded: decodedMainTestLog,
       ...createDefaultLog(),
     }
-    mainTestLog.id = 'myliquidationcalllogid'
-    mainTestLog.block.height = 11362580
-    mainTestLog.transactionHash = '0xmyliquidationcalltransactionhash'
+    mainTestLog.id = lognum.toString()
+    lognum += 1
+    mainTestLog.block.height = miniHash('main' + 'height')
+    mainTestLog.transactionHash = '0xmymaintransactionhashfromlog'
 
     // Minimal ProcessorContext mock
     const ctx = { store } as any
@@ -46,28 +53,29 @@ describe('handleLiquidationCalls integration', () => {
       'ethereum-mainnet',
       ctx,
       [mainTestLog],
-      { transfers: [] },
+      { transfers: [] }
     )
 
     expect(liquidationCalls).toHaveLength(1)
     expect(liquidationCalls[0]).toMatchObject({
-      id: 'myliquidationcalllogid',
-      block: 11362580,
+      id: mainTestLog.id,
+      block: mainTestLog.block.height,
       ...decodedMainTestLog,
-      txnHash: '0xmyliquidationcalltransactionhash',
+      txnHash: '0xmymaintransactionhashfromlog',
     })
 
-    const dbLiquidationCalls = await db.dataSource
+    const dbTransfers = await db.dataSource
       .createQueryBuilder()
       .select('*')
-      .from('aave_pool_main_liquidation_call', 'l')
+      .from('aave_pool_liquidation_call', 't')
+      .addOrderBy('id::int', 'ASC')
       .getRawMany()
 
-    expect(dbLiquidationCalls).toHaveLength(1)
-    expect(dbLiquidationCalls[0]).toMatchObject({
-      id: 'myliquidationcalllogid',
-      block: 11362580,
-      txn_hash: '0xmyliquidationcalltransactionhash',
+    expect(dbTransfers).toHaveLength(1)
+    expect(dbTransfers[0]).toMatchObject({
+      id: mainTestLog.id,
+      block: mainTestLog.block.height,
+      txn_hash: '0xmymaintransactionhashfromlog',
       collateral_asset: decodedMainTestLog.collateralAsset,
       debt_asset: decodedMainTestLog.debtAsset,
       user: decodedMainTestLog.user,
