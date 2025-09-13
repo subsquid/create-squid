@@ -18,24 +18,13 @@ export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-/**
- * Converts a string to camelCase (first character lowercase)
- */
-export function camelCase(str: string): string {
-  if (!str) return str;
-  return str.charAt(0).toLowerCase() + str.slice(1);
-}
-
-/**
- * Converts kebab-case or snake_case to camelCase
- */
-export function toCamelCase(str: string): string {
+export function kebabToCamel(str: string): string {
   if (!str) return str;
   return str.replace(/-(.)/g, (match, letter) => letter.toUpperCase());
 }
 
 /**
- * Converts a string to kebab-case
+ * Converts a camelCased, space separated, or snake_case string to kebab-case
  */
 export function toKebabCase(str: string): string {
   if (!str) return str;
@@ -46,7 +35,7 @@ export function toKebabCase(str: string): string {
 }
 
 /**
- * Converts a string to PascalCase
+ * Converts a camelCased, space separated, or snake_case string to PascalCase
  */
 export function toPascalCase(str: string): string {
   if (!str) return str;
@@ -56,7 +45,7 @@ export function toPascalCase(str: string): string {
 }
 
 /**
- * Converts a string to snake_case
+ * Converts a camelCased, space separated, or snake_case string to snake_case
  */
 export function toSnakeCase(str: string): string {
   if (!str) return str;

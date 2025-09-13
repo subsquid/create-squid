@@ -23,8 +23,7 @@ import { NETWORK_CONFIGS } from './network-configs';
 import { extractEventName } from './string-transforms/event';
 import {
   decapitalize,
-  camelCase,
-  toCamelCase,
+  kebabToCamel,
   toSnakeCase,
   capitalize
 } from './string-transforms/casing';
@@ -453,9 +452,9 @@ function processContractForTemplate(
   allEvents: Array<{contract: ProcessedContract, event: ProcessedEvent}>
 ): ProcessedContractForTemplate {
   const contractNameLower = decapitalize(contract.name);
-  const contractNameCamel = camelCase(contract.name);
+  const contractNameCamel = decapitalize(contract.name);
   const abiFileName = path.basename(contract.abiPath, '.json');
-  const abiImportName = toCamelCase(abiFileName);
+  const abiImportName = kebabToCamel(abiFileName);
   
   const events = contract.events.map(event => {
     const eventNameLower = decapitalize(event.name);
