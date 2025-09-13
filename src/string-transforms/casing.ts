@@ -61,7 +61,8 @@ export function toPascalCase(str: string): string {
 export function toSnakeCase(str: string): string {
   if (!str) return str;
   return str
-    .replace(/([a-z])([A-Z])/g, '$1_$2')
+    .replace(/([a-z])([A-Z])/g, '$1_$2')  // Add underscore before capital letters after lowercase
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')  // Add underscore between consecutive capitals followed by lowercase
     .replace(/[\s-]+/g, '_')
     .toLowerCase();
 }

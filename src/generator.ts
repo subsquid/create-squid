@@ -21,7 +21,13 @@ import {
 } from './abi-parser';
 import { NETWORK_CONFIGS } from './network-configs';
 import { extractEventName } from './string-transforms/event';
-import { decapitalize, camelCase, toCamelCase } from './string-transforms/casing';
+import {
+  decapitalize,
+  camelCase,
+  toCamelCase,
+  toSnakeCase,
+  capitalize
+} from './string-transforms/casing';
 import { extractShortNetworkName } from './string-transforms/network';
 import { cleanupExistingFiles } from './filesystem';
 import { runCodeGeneration, installDependencies } from './external-calls';
@@ -291,7 +297,9 @@ export class SquidGenerator {
           eventNameLower: eventData.eventNameLower,
           eventFields: eventData.eventFields,
           instances: contractData.instances,
-          previouslyProcessed: eventData.previouslyProcessed
+          previouslyProcessed: eventData.previouslyProcessed,
+          tableNameSnake: eventData.tableNameSnake,
+          hasPreviouslyProcessed: eventData.hasPreviouslyProcessed
         };
 
         await this.renderTemplateWithData(templatePath, outputPath, specificTemplateData);
@@ -343,14 +351,6 @@ export class SquidGenerator {
       throw new TemplateError(`Failed to render template ${templatePath}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
-
-
-
-
-
-
-
-
 }
 /**
  * Template data preparation utilities
@@ -460,11 +460,17 @@ function processContractForTemplate(
   const events = contract.events.map(event => {
     const eventNameLower = decapitalize(event.name);
     
-    const eventFields = event.abiEvent.inputs.map((input: any, index: number, array: any[]) => ({
-      fieldName: input.name,
-      fieldType: mapSolidityTypeToGraphQL(input.type),
-      last: index === array.length - 1
-    }));
+    const eventFields = event.abiEvent.inputs.map((input: any, index: number, array: any[]) => {
+      const fieldType = mapSolidityTypeToGraphQL(input.type);
+      return {
+        fieldName: input.name,
+        fieldNameSnake: toSnakeCase(input.name),
+        fieldType,
+        isBigInt: fieldType === 'BigInt',
+        isBoolean: fieldType === 'Boolean',
+        last: index === array.length - 1
+      };
+    });
 
     // Find the current event index in the global event list
     const currentEventIndex = allEvents.findIndex(ae => 
@@ -487,7 +493,9 @@ function processContractForTemplate(
       contractNameLower,
       contractName: contract.name,
       eventFields,
-      previouslyProcessed
+      previouslyProcessed,
+      tableNameSnake: `${toSnakeCase(contract.name)}_${toSnakeCase(event.name)}`,
+      hasPreviouslyProcessed: previouslyProcessed.length > 0
     };
   });
 
@@ -501,13 +509,16 @@ function processContractForTemplate(
     last: isLast
   };
 
-  result.instances = contract.instances.map(instance => ({
+  result.instances = contract.instances.map((instance, index) => ({
     name: instance.name,
+    nameCapitalized: capitalize(instance.name),
     address: instance.address,
     proxy: instance.proxy,
     network: instance.network,
     range: instance.range,
-    isOnNetwork: true // For dynamic templates, we include all instances
+    isOnNetwork: true, // For dynamic templates, we include all instances
+    index: index,
+    last: index === contract.instances.length - 1
   }));
 
   return result;

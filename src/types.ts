@@ -74,7 +74,10 @@ export interface GeneratorOptions {
 
 export interface EventField {
   fieldName: string;
+  fieldNameSnake: string;
   fieldType: string;
+  isBigInt: boolean;
+  isBoolean: boolean;
   last: boolean;
 }
 
@@ -85,6 +88,8 @@ export interface ProcessedEventForTemplate {
   contractName?: string;
   eventFields: EventField[];
   previouslyProcessed: Array<{previouslyProcessedField: string, previouslyProcessedFieldType: string}>;
+  tableNameSnake: string;
+  hasPreviouslyProcessed: boolean;
 }
 
 export interface ProcessedInstanceForTemplate {
