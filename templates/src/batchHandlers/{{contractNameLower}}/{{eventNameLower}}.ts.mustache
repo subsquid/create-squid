@@ -3,7 +3,8 @@
 // any TypeORM model classes these logs might affect.
 
 import {
-  {{contractName}}{{eventName}}
+{{#previouslyProcessed}}  {{previouslyProcessedFieldType}},
+{{/previouslyProcessed}}  {{contractName}}{{eventName}}
 } from '../../model'
 import {
   ProcessorContext,
@@ -23,10 +24,8 @@ export async function handle{{eventName}}s(
 {{/previouslyProcessed}}
   },
 ): Promise<{
-{{#previouslyProcessed}}
-    {{previouslyProcessedField}}: {{previouslyProcessedFieldType}}[],
-{{/previouslyProcessed}}
-  {{eventNameLower}}s: {{contractName}}{{eventName}}[],
+{{#previouslyProcessed}}  {{previouslyProcessedField}}: {{previouslyProcessedFieldType}}[],
+{{/previouslyProcessed}}  {{eventNameLower}}s: {{contractName}}{{eventName}}[],
 }> {
 
   const {{eventNameLower}}s = logs.map(l => new {{contractName}}{{eventName}}({
