@@ -30,7 +30,7 @@ export async function handleTransfers(
     txnHash: l.transactionHash,
     from: l.decoded.from,
     to: l.decoded.to,
-    value: l.decoded.value
+    value: l.decoded.value,
   }))
 
   await ctx.store.insert(transfers)

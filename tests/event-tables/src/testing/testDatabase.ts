@@ -49,6 +49,7 @@ export async function setupTestDatabase() : Promise<TestDatabase> {
     logging: false,
     namingStrategy: defaultConfig.namingStrategy
   })
+
   await dataSource.initialize()
   await dataSource.runMigrations()
 

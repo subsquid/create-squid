@@ -25,7 +25,7 @@ import * as erc20Abi from './abi/erc20'
 import * as aavePoolAbi from './abi/aave-pool'
 
 import { handleTransfers } from './batchHandlers/tokens/transfer'
-import { handleLiquidationCalls } from './batchHandlers/aavepool/liquidationCall'
+import { handleLiquidationCalls } from './batchHandlers/aavePool/liquidationCall'
 
 // Can vary by network/processor, but we'll use a single global value here.
 export const fieldSelection = {
@@ -61,7 +61,6 @@ export const config: FullConfig = {
     gateway: 'https://v2.archive.subsquid.io/network/ethereum-mainnet',
     rpcEndpoint: process.env.RPC_ETH_HTTP,
     finalityConfirmation: 75,
-    // order of requests matters - handler execution will follow it
     requests: [
       {
         contract: 'Tokens',
@@ -105,7 +104,7 @@ export const config: FullConfig = {
       {
         contract: 'Tokens',
         addresses: {
-          'sqd': '0x1337420dED5ADb9980CFc35f8f2B054ea86f8aB1'.toLocaleLowerCase(),
+          'sqd': '0x1337420dED5ADb9980CFc35f8f2B054ea86f8aB1'.toLowerCase(),
         },
         events: [
           {
