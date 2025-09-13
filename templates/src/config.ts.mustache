@@ -37,8 +37,8 @@ export const fieldSelection = {
     address: true,
     data: true,
     topics: true,
-    transactionHash: true
-  }
+    transactionHash: true,
+  },
 } as const // Without "as const" downstream types will break.
 // Temporarily designate "as FieldSelection" to gain IDE field suggestions.
 
@@ -66,7 +66,6 @@ export const config: FullConfig = {
     gateway: '{{{gateway}}}',
     rpcEndpoint: process.env.{{rpcEndpoint}},
     finalityConfirmation: {{finalityConfirmation}},
-    // order of requests matters - handler execution will follow it
     requests: [
 {{#contracts}}
 {{#hasInstancesOnNetwork}}
@@ -75,7 +74,7 @@ export const config: FullConfig = {
         addresses: {
 {{#instances}}
 {{#isOnNetwork}}
-          '{{name}}': '{{address}}'.toLowerCase()
+          '{{name}}': '{{address}}'.toLowerCase(),
 {{/isOnNetwork}}
 {{/instances}}
         },
@@ -84,21 +83,21 @@ export const config: FullConfig = {
           {
             name: '{{name}}',
             abiHelper: {{abiImportName}}Abi.events.{{name}},
-            batchHandler: handle{{name}}s
-          }
+            batchHandler: handle{{name}}s,
+          },
 {{/events}}
         ],
         range: {
 {{#instances}}
 {{#isOnNetwork}}
-          from: {{range.from}}
+          from: {{range.from}},
 {{/isOnNetwork}}
 {{/instances}}
-        }
+        },
       },
 {{/hasInstancesOnNetwork}}
 {{/contracts}}
-    ]
+    ],
   },
 {{/networks}}
 }
