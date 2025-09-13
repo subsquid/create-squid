@@ -17,9 +17,10 @@ export async function handleTransfers(
   network: NetworkName,
   ctx: ProcessorContext,
   logs: DecodedLogWithContractMetadata[],
-  previouslyProcessed: {}
+  previouslyProcessed: {
+  },
 ): Promise<{
-  transfers: TokensTransfer[]
+  transfers: TokensTransfer[],
 }> {
 
   const transfers = logs.map(l => new TokensTransfer({
@@ -35,5 +36,8 @@ export async function handleTransfers(
 
   await ctx.store.insert(transfers)
 
-  return { transfers }
+  return {
+    ...previouslyProcessed,
+    transfers,
+  }
 }

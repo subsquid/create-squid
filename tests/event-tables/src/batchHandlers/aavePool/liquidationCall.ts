@@ -19,11 +19,11 @@ export async function handleLiquidationCalls(
   ctx: ProcessorContext,
   logs: DecodedLogWithContractMetadata[],
   previouslyProcessed: {
-    transfers: TokensTransfer[]
-  }
+    transfers: TokensTransfer[],
+  },
 ): Promise<{
   transfers: TokensTransfer[],
-  liquidationCalls: AavePoolLiquidationCall[]
+  liquidationCalls: AavePoolLiquidationCall[],
 }> {
 
   const liquidationCalls = logs.map(l => new AavePoolLiquidationCall({
@@ -38,13 +38,13 @@ export async function handleLiquidationCalls(
     debtToCover: l.decoded.debtToCover,
     liquidatedCollateralAmount: l.decoded.liquidatedCollateralAmount,
     liquidator: l.decoded.liquidator,
-    receiveAToken: l.decoded.receiveAToken
+    receiveAToken: l.decoded.receiveAToken,
   }))
 
   await ctx.store.insert(liquidationCalls)
 
   return {
-    transfers: previouslyProcessed.transfers,
-    liquidationCalls
+    ...previouslyProcessed,
+    liquidationCalls,
   }
 }
