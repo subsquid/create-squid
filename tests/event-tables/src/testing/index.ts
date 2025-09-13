@@ -1,3 +1,3 @@
 export * from './defaultObjects'
-export * from './integerHashes'
+export * from './miniHash'
 export * from './testDatabase'
