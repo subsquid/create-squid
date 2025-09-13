@@ -186,18 +186,7 @@ export class SquidGenerator {
 
         const outputPath = path.join(this.options.outputDir, outputFileName);
 
-        // Find the corresponding contract and event in the original project data
-        const originalContract = project.contracts.find(c => c.name === contractData.name);
-        const originalEvent = originalContract?.events.find(e => e.name === eventData.name);
-
-        if (!originalContract || !originalEvent) {
-          throw new Error(`Could not find original contract/event data for ${contractData.name}.${eventData.name}`);
-        }
-
-        // Get previously processed fields for this event
-        const previouslyProcessed = this.getPreviouslyProcessedFields(project, originalContract, originalEvent);
-
-        // Use contractData directly - it already has all the needed data
+        // Use contractData directly - it already has all the needed data including previouslyProcessed
         const specificTemplateData = {
           ...templateData,
           contractName: contractData.name,
@@ -206,7 +195,7 @@ export class SquidGenerator {
           eventNameLower: eventData.eventNameLower,
           eventFields: eventData.eventFields,
           instances: contractData.instances,
-          previouslyProcessed
+          previouslyProcessed: eventData.previouslyProcessed
         };
 
         await this.renderTemplateWithData(templatePath, outputPath, specificTemplateData);
@@ -258,8 +247,16 @@ export class SquidGenerator {
   }
 
   private prepareContractTemplateData(project: GeneratedProject): ContractTemplateData {
+    // Build a flat list of all events in order to determine previously processed fields
+    const allEvents: Array<{contract: ProcessedContract, event: ProcessedEvent}> = [];
+    for (const contract of project.contracts) {
+      for (const event of contract.events) {
+        allEvents.push({ contract, event });
+      }
+    }
+
     const contracts = project.contracts.map((contract, index) => {
-      return this.processContractForTemplate(contract, index === project.contracts.length - 1);
+      return this.processContractForTemplate(contract, index === project.contracts.length - 1, allEvents);
     });
 
     return {
@@ -270,6 +267,14 @@ export class SquidGenerator {
   }
 
   private prepareNetworkBasedTemplateData(project: GeneratedProject): NetworkBasedTemplateData {
+    // Build a flat list of all events in order to determine previously processed fields
+    const allEvents: Array<{contract: ProcessedContract, event: ProcessedEvent}> = [];
+    for (const contract of project.contracts) {
+      for (const event of contract.events) {
+        allEvents.push({ contract, event });
+      }
+    }
+
     const networks = project.networks.map((networkName, index) => {
       const networkConfig = NETWORK_CONFIGS[networkName];
       if (!networkConfig) {
@@ -279,7 +284,7 @@ export class SquidGenerator {
       const shortName = this.extractShortNetworkName(networkConfig.rpcEndpoint);
       
       const contracts = project.contracts.map(contract => {
-        const processedContract = this.processContractForTemplate(contract);
+        const processedContract = this.processContractForTemplate(contract, false, allEvents);
         
         const instances = contract.instances.map(instance => ({
           name: instance.name,
@@ -312,7 +317,7 @@ export class SquidGenerator {
 
     // For schema.graphql and other templates that need all contracts
     const contracts = project.contracts.map((contract, index) => {
-      return this.processContractForTemplate(contract, index === project.contracts.length - 1);
+      return this.processContractForTemplate(contract, index === project.contracts.length - 1, allEvents);
     });
 
     return {
@@ -323,7 +328,7 @@ export class SquidGenerator {
     };
   }
 
-  private processContractForTemplate(contract: ProcessedContract, isLast: boolean = false): ProcessedContractForTemplate {
+  private processContractForTemplate(contract: ProcessedContract, isLast: boolean = false, allEvents: Array<{contract: ProcessedContract, event: ProcessedEvent}>): ProcessedContractForTemplate {
     const contractNameLower = this.decapitalize(contract.name);
     const contractNameCamel = this.camelCase(contract.name);
     const abiFileName = path.basename(contract.abiPath, '.json');
@@ -338,12 +343,28 @@ export class SquidGenerator {
         last: index === array.length - 1
       }));
 
+      // Find the current event index in the global event list
+      const currentEventIndex = allEvents.findIndex(ae => 
+        ae.contract.name === contract.name && ae.event.name === event.name
+      );
+
+      // Build previously processed fields for this event
+      const previouslyProcessed = [];
+      for (let i = 0; i < currentEventIndex; i++) {
+        const prevEvent = allEvents[i];
+        previouslyProcessed.push({
+          previouslyProcessedField: this.decapitalize(prevEvent.event.name) + 's',
+          previouslyProcessedFieldType: prevEvent.contract.name + prevEvent.event.name
+        });
+      }
+
       return {
         name: event.name,
         eventNameLower,
         contractNameLower,
         contractName: contract.name,
-        eventFields
+        eventFields,
+        previouslyProcessed
       };
     });
 
@@ -369,48 +390,6 @@ export class SquidGenerator {
     return result;
   }
 
-  private getAllEventsInOrder(project: GeneratedProject): Array<{contract: ProcessedContract, event: ProcessedEvent, eventIndex: number}> {
-    const allEvents: Array<{contract: ProcessedContract, event: ProcessedEvent, eventIndex: number}> = [];
-
-    for (const contract of project.contracts) {
-      for (let eventIndex = 0; eventIndex < contract.events.length; eventIndex++) {
-        allEvents.push({
-          contract,
-          event: contract.events[eventIndex],
-          eventIndex
-        });
-      }
-    }
-
-    return allEvents;
-  }
-
-  private getPreviouslyProcessedFields(project: GeneratedProject, currentContract: ProcessedContract, currentEvent: ProcessedEvent): Array<{previouslyProcessedField: string, previouslyProcessedFieldType: string}> {
-    const allEvents = this.getAllEventsInOrder(project);
-    const currentEventIndex = allEvents.findIndex(ae => 
-      ae.contract.name === currentContract.name && ae.event.name === currentEvent.name
-    );
-    
-    if (currentEventIndex === 0) {
-      // First event has no previously processed fields
-      return [];
-    }
-    
-    const previouslyProcessedFields: Array<{previouslyProcessedField: string, previouslyProcessedFieldType: string}> = [];
-    
-    // Add all events that come before the current one
-    for (let i = 0; i < currentEventIndex; i++) {
-      const prevEvent = allEvents[i];
-      const fieldName = this.decapitalize(prevEvent.event.name) + 's'; // pluralize
-      const fieldType = prevEvent.contract.name + prevEvent.event.name;
-      previouslyProcessedFields.push({
-        previouslyProcessedField: fieldName,
-        previouslyProcessedFieldType: fieldType
-      });
-    }
-    
-    return previouslyProcessedFields;
-  }
 
   private async cleanupExistingFiles(): Promise<void> {
     console.log('Cleaning up existing generated files...');

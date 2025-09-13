@@ -84,6 +84,7 @@ export interface ProcessedEventForTemplate {
   contractNameLower: string;
   contractName?: string;
   eventFields: EventField[];
+  previouslyProcessed: Array<{previouslyProcessedField: string, previouslyProcessedFieldType: string}>;
 }
 
 export interface ProcessedInstanceForTemplate {
