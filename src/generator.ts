@@ -19,7 +19,7 @@ import {
   findEventBySignature,
   mapSolidityTypeToGraphQL
 } from './abi-parser';
-import { NETWORK_CONFIGS } from './network-configs';
+import { getNetworkConfigs } from './network-configs';
 import { extractEventName } from './string-transforms/event';
 import {
   decapitalize,
@@ -310,7 +310,7 @@ export class SquidGenerator {
     const template = await fs.readFile(templatePath, 'utf8');
     
     // Determine which template data function to use based on the template file
-    const templateData = this.selectTemplateData(templatePath, project);
+    const templateData = await this.selectTemplateData(templatePath, project);
     
     await this.renderTemplateWithData(templatePath, outputPath, templateData);
   }
@@ -318,7 +318,7 @@ export class SquidGenerator {
   /**
    * Selects the appropriate template data preparation strategy based on the template file
    */
-  private selectTemplateData(templatePath: string, project: GeneratedProject): any {
+  private async selectTemplateData(templatePath: string, project: GeneratedProject): Promise<any> {
     const isContractTemplate = SquidGenerator.CONTRACT_TEMPLATE_PATTERNS.some(pattern => 
       templatePath.includes(pattern)
     );
@@ -328,7 +328,7 @@ export class SquidGenerator {
       return prepareContractTemplateData(project);
     } else {
       // Other templates (including config.ts) need network-based data
-      return prepareNetworkBasedTemplateData(project);
+      return await prepareNetworkBasedTemplateData(project);
     }
   }
 
@@ -381,7 +381,7 @@ function prepareContractTemplateData(project: GeneratedProject): ContractTemplat
 /**
  * Prepares network-based template data for templates that need network-specific information
  */
-function prepareNetworkBasedTemplateData(project: GeneratedProject): NetworkBasedTemplateData {
+async function prepareNetworkBasedTemplateData(project: GeneratedProject): Promise<NetworkBasedTemplateData> {
   // Build a flat list of all events in order to determine previously processed fields
   const allEvents: Array<{contract: ProcessedContract, event: ProcessedEvent}> = [];
   for (const contract of project.contracts) {
@@ -390,8 +390,11 @@ function prepareNetworkBasedTemplateData(project: GeneratedProject): NetworkBase
     }
   }
 
+  // Get network configurations
+  const networkConfigs = await getNetworkConfigs();
+
   const networks = project.networks.map((networkName, index) => {
-    const networkConfig = NETWORK_CONFIGS[networkName];
+    const networkConfig = networkConfigs[networkName];
     if (!networkConfig) {
       throw new Error(`Unknown network: ${networkName}`);
     }
@@ -425,6 +428,7 @@ function prepareNetworkBasedTemplateData(project: GeneratedProject): NetworkBase
       gateway: networkConfig.gateway,
       rpcEndpoint: networkConfig.rpcEndpoint,
       finalityConfirmation: networkConfig.finalityConfirmation,
+      publicRpcUrl: networkConfig.publicRpcUrl,
       contracts,
       last: index === project.networks.length - 1
     };

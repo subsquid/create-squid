@@ -55,3 +55,15 @@ export function toSnakeCase(str: string): string {
     .replace(/[\s-]+/g, '_')
     .toLowerCase();
 }
+
+/**
+ * Converts a string to MACRO_CASE (UPPER_CASE with underscores)
+ */
+export function toMacroCase(str: string): string {
+  if (!str) return str;
+  return str
+    .toUpperCase()
+    .replace(/[^A-Z0-9À-ÿ]/g, '_') // Replace non-alphanumeric chars with underscore, preserving Unicode
+    .replace(/_+/g, '_') // Replace consecutive underscores with single underscore
+    .replace(/^_|_$/g, ''); // Remove leading and trailing underscores
+}

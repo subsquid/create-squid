@@ -4,7 +4,8 @@ import {
   kebabToCamel,
   toKebabCase,
   toPascalCase,
-  toSnakeCase
+  toSnakeCase,
+  toMacroCase
 } from './casing';
 
 describe('String Transforms - Casing', () => {
@@ -275,6 +276,109 @@ describe('String Transforms - Casing', () => {
     });
   });
 
+  describe('toMacroCase', () => {
+    it('should convert camelCase to MACRO_CASE', () => {
+      expect(toMacroCase('helloWorld')).toBe('HELLOWORLD');
+      expect(toMacroCase('myComponentName')).toBe('MYCOMPONENTNAME');
+      expect(toMacroCase('testCase')).toBe('TESTCASE');
+    });
+
+    it('should convert PascalCase to MACRO_CASE', () => {
+      expect(toMacroCase('HelloWorld')).toBe('HELLOWORLD');
+      expect(toMacroCase('MyComponentName')).toBe('MYCOMPONENTNAME');
+      expect(toMacroCase('TestCase')).toBe('TESTCASE');
+    });
+
+    it('should convert kebab-case to MACRO_CASE', () => {
+      expect(toMacroCase('hello-world')).toBe('HELLO_WORLD');
+      expect(toMacroCase('my-component-name')).toBe('MY_COMPONENT_NAME');
+      expect(toMacroCase('test-case')).toBe('TEST_CASE');
+    });
+
+    it('should convert snake_case to MACRO_CASE', () => {
+      expect(toMacroCase('hello_world')).toBe('HELLO_WORLD');
+      expect(toMacroCase('my_component_name')).toBe('MY_COMPONENT_NAME');
+      expect(toMacroCase('test_case')).toBe('TEST_CASE');
+    });
+
+    it('should handle spaces', () => {
+      expect(toMacroCase('hello world')).toBe('HELLO_WORLD');
+      expect(toMacroCase('my component name')).toBe('MY_COMPONENT_NAME');
+      expect(toMacroCase('test case')).toBe('TEST_CASE');
+    });
+
+    it('should handle mixed separators', () => {
+      expect(toMacroCase('hello_world-test')).toBe('HELLO_WORLD_TEST');
+      expect(toMacroCase('my component_name')).toBe('MY_COMPONENT_NAME');
+      expect(toMacroCase('test_case world')).toBe('TEST_CASE_WORLD');
+    });
+
+    it('should handle strings without separators', () => {
+      expect(toMacroCase('hello')).toBe('HELLO');
+      expect(toMacroCase('world')).toBe('WORLD');
+      expect(toMacroCase('HELLO')).toBe('HELLO');
+    });
+
+    it('should handle empty string', () => {
+      expect(toMacroCase('')).toBe('');
+    });
+
+    it('should handle consecutive separators', () => {
+      expect(toMacroCase('hello__world')).toBe('HELLO_WORLD');
+      expect(toMacroCase('my  component')).toBe('MY_COMPONENT');
+      expect(toMacroCase('test--case')).toBe('TEST_CASE');
+    });
+
+    it('should handle numbers', () => {
+      expect(toMacroCase('test123')).toBe('TEST123');
+      expect(toMacroCase('myComponent2Name')).toBe('MYCOMPONENT2NAME');
+      expect(toMacroCase('test-123-case')).toBe('TEST_123_CASE');
+      expect(toMacroCase('test_123_case')).toBe('TEST_123_CASE');
+    });
+
+    it('should handle special characters', () => {
+      expect(toMacroCase('hello.world')).toBe('HELLO_WORLD');
+      expect(toMacroCase('my@component')).toBe('MY_COMPONENT');
+      expect(toMacroCase('test#case')).toBe('TEST_CASE');
+      expect(toMacroCase('hello!world')).toBe('HELLO_WORLD');
+      expect(toMacroCase('my$component')).toBe('MY_COMPONENT');
+    });
+
+    it('should handle strings already in MACRO_CASE', () => {
+      expect(toMacroCase('HELLO_WORLD')).toBe('HELLO_WORLD');
+      expect(toMacroCase('MY_COMPONENT_NAME')).toBe('MY_COMPONENT_NAME');
+      expect(toMacroCase('TEST_CASE')).toBe('TEST_CASE');
+    });
+
+    it('should handle RPC endpoint abbreviations', () => {
+      expect(toMacroCase('eth')).toBe('ETH');
+      expect(toMacroCase('arbitrum-one')).toBe('ARBITRUM_ONE');
+      expect(toMacroCase('polygon-mainnet')).toBe('POLYGON_MAINNET');
+      expect(toMacroCase('base-mainnet')).toBe('BASE_MAINNET');
+      expect(toMacroCase('optimism')).toBe('OPTIMISM');
+      expect(toMacroCase('bsc')).toBe('BSC');
+    });
+
+    it('should handle unicode characters', () => {
+      expect(toMacroCase('café_au_lait')).toBe('CAFÉ_AU_LAIT');
+      expect(toMacroCase('ñoño')).toBe('ÑOÑO');
+    });
+
+    it('should handle strings with only special characters', () => {
+      expect(toMacroCase('---')).toBe('');
+      expect(toMacroCase('___')).toBe('');
+      expect(toMacroCase('...')).toBe('');
+      expect(toMacroCase('!!!')).toBe('');
+    });
+
+    it('should handle strings starting or ending with special characters', () => {
+      expect(toMacroCase('-hello')).toBe('HELLO');
+      expect(toMacroCase('hello-')).toBe('HELLO');
+      expect(toMacroCase('_hello')).toBe('HELLO');
+      expect(toMacroCase('hello_')).toBe('HELLO');
+    });
+  });
+
   describe('Edge cases and error handling', () => {
     it('should handle null and undefined inputs gracefully', () => {
       // Note: The functions don't explicitly handle null/undefined, 
@@ -285,6 +389,7 @@ describe('String Transforms - Casing', () => {
       expect(toKebabCase('')).toBe('');
       expect(toPascalCase('')).toBe('');
       expect(toSnakeCase('')).toBe('');
+      expect(toMacroCase('')).toBe('');
     });
 
     it('should handle very long strings', () => {
