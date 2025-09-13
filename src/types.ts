@@ -71,3 +71,64 @@ export interface GeneratorOptions {
   skipInstall?: boolean;
   skipCodegen?: boolean;
 }
+
+export interface EventField {
+  fieldName: string;
+  fieldType: string;
+  last: boolean;
+}
+
+export interface ProcessedEventForTemplate {
+  name: string;
+  eventNameLower: string;
+  contractNameLower: string;
+  contractName?: string;
+  eventFields: EventField[];
+}
+
+export interface ProcessedInstanceForTemplate {
+  name: string;
+  address: string;
+  proxy?: string;
+  network: string;
+  range: {
+    from: number;
+    to?: number;
+  } | null;
+  isOnNetwork: boolean;
+}
+
+export interface ProcessedContractForTemplate {
+  name: string;
+  contractNameLower: string;
+  contractNameCamel: string;
+  abiFileName: string;
+  abiImportName: string;
+  events: ProcessedEventForTemplate[];
+  instances?: ProcessedInstanceForTemplate[];
+  hasInstancesOnNetwork?: boolean;
+  last?: boolean;
+}
+
+export interface NetworkTemplateData {
+  name: string;
+  shortName: string;
+  gateway: string;
+  rpcEndpoint: string;
+  finalityConfirmation: number;
+  contracts: ProcessedContractForTemplate[];
+  last: boolean;
+}
+
+export interface ContractTemplateData {
+  projectName: string;
+  projectDescription: string;
+  contracts: ProcessedContractForTemplate[];
+}
+
+export interface NetworkBasedTemplateData {
+  projectName: string;
+  projectDescription: string;
+  networks: NetworkTemplateData[];
+  contracts: ProcessedContractForTemplate[];
+}

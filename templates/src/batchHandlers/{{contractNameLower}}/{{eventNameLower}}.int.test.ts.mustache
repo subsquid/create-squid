@@ -17,6 +17,62 @@ describe('handle{{eventName}}s integration', () => {
     await db.cleanup()
   })
 
+{{#instances}}
+  it('should process {{eventName}} events for {{name}} instance', async () => {
+    const decoded{{name}}TestLog = {
+{{#eventFields}}
+      {{fieldName}}: 'test{{fieldName}}{{name}}',
+{{/eventFields}}
+    }
+    const {{name}}TestLog = {
+      contract: {
+        name: '{{contractName}}',
+        instanceName: '{{name}}',
+        instanceAddress: '{{address}}'
+      },
+      decoded: decoded{{name}}TestLog,
+      ...createDefaultLog()
+    }
+    {{name}}TestLog.id = 'my{{eventNameLower}}{{name}}logid'
+    {{name}}TestLog.block.height = 11362580
+    {{name}}TestLog.transactionHash = '0xmy{{eventNameLower}}{{name}}transactionhash'
+
+    // Minimal ProcessorContext mock
+    const ctx = { store } as any
+    const { {{eventNameLower}}s } = await handle{{eventName}}s(
+      'ethereum-mainnet',
+      ctx,
+      [{{name}}TestLog],
+      {}
+    )
+
+    expect({{eventNameLower}}s).toHaveLength(1)
+    expect({{eventNameLower}}s[0]).toMatchObject({
+      id: 'my{{eventNameLower}}{{name}}logid',
+      block: 11362580,
+      ...decoded{{name}}TestLog,
+      txnHash: '0xmy{{eventNameLower}}{{name}}transactionhash',
+    })
+
+    const db{{eventName}}s = await db.dataSource
+      .createQueryBuilder()
+      .select('*')
+      .from('{{contractNameLower}}_{{name}}_{{eventNameLower}}', 'e')
+      .getRawMany()
+
+    expect(db{{eventName}}s).toHaveLength(1)
+    expect(db{{eventName}}s[0]).toMatchObject({
+      id: 'my{{eventNameLower}}{{name}}logid',
+      block: 11362580,
+      txn_hash: '0xmy{{eventNameLower}}{{name}}transactionhash',
+{{#eventFields}}
+      {{fieldName}}: decoded{{name}}TestLog.{{fieldName}},
+{{/eventFields}}
+    })
+  })
+
+{{/instances}}
+
   it('should process {{eventName}} events and save them to the database', async () => {
     const decodedMainTestLog = {
 {{#eventFields}}

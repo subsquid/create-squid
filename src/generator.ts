@@ -10,7 +10,12 @@ import {
   ProcessedContract,
   ProcessedInstance,
   ProcessedEvent,
-  GeneratorOptions
+  GeneratorOptions,
+  ContractTemplateData,
+  NetworkBasedTemplateData,
+  ProcessedContractForTemplate,
+  ProcessedEventForTemplate,
+  ProcessedInstanceForTemplate
 } from './types';
 import {
   parseAbiFile,
@@ -133,6 +138,11 @@ export class SquidGenerator {
     return str.charAt(0).toLowerCase() + str.slice(1);
   }
 
+  private capitalize(str: string): string {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
   private camelCase(str: string): string {
     if (!str) return str;
     return str.charAt(0).toLowerCase() + str.slice(1);
@@ -163,33 +173,28 @@ export class SquidGenerator {
   }
 
   private async generateDynamicTemplates(templatePath: string, templateFile: string, project: GeneratedProject): Promise<void> {
-    const templateData = this.prepareTemplateData(project);
+    const templateData = this.prepareContractTemplateData(project);
     
     // Generate templates for each contract and event
-    for (const contract of project.contracts) {
-      for (const event of contract.events) {
-        const contractNameLower = this.decapitalize(contract.name);
-        const eventNameLower = this.decapitalize(event.name);
-        
+    for (const contractData of templateData.contracts) {
+      for (const eventData of contractData.events) {
         // Replace placeholders in filename
         let outputFileName = templateFile
-          .replace('{{contractNameLower}}', contractNameLower)
-          .replace('{{eventNameLower}}', eventNameLower)
+          .replace('{{contractNameLower}}', contractData.contractNameLower)
+          .replace('{{eventNameLower}}', eventData.eventNameLower)
           .replace('.mustache', '');
         
         const outputPath = path.join(this.options.outputDir, outputFileName);
         
-        // Prepare specific template data for this contract/event
+        // Use contractData directly - it already has all the needed data
         const specificTemplateData = {
           ...templateData,
-          contractName: contract.name,
-          contractNameLower,
-          eventName: event.name,
-          eventNameLower,
-          eventFields: event.abiEvent.inputs.map((input: any) => ({
-            fieldName: input.name,
-            fieldType: mapSolidityTypeToGraphQL(input.type)
-          }))
+          contractName: contractData.name,
+          contractNameLower: contractData.contractNameLower,
+          eventName: eventData.name,
+          eventNameLower: eventData.eventNameLower,
+          eventFields: eventData.eventFields,
+          instances: contractData.instances // Already included if needed
         };
         
         await this.renderTemplateWithData(templatePath, outputPath, specificTemplateData);
@@ -200,8 +205,18 @@ export class SquidGenerator {
   private async renderTemplate(templatePath: string, outputPath: string, project: GeneratedProject): Promise<void> {
     const template = await fs.readFile(templatePath, 'utf8');
     
-    // Prepare template data
-    const templateData = this.prepareTemplateData(project);
+    // Determine which template data function to use based on the template file
+    let templateData;
+    if (templatePath.includes('schema.graphql') || templatePath.includes('processor.ts') || templatePath.includes('main.ts')) {
+      // These templates need contract data without network-specific filtering
+      templateData = this.prepareContractTemplateData(project);
+    } else if (templatePath.includes('config.ts')) {
+      // Config template needs network-based data with instances
+      templateData = this.prepareNetworkBasedTemplateData(project);
+    } else {
+      // Other templates need network-based data
+      templateData = this.prepareNetworkBasedTemplateData(project);
+    }
     
     await this.renderTemplateWithData(templatePath, outputPath, templateData);
   }
@@ -230,8 +245,20 @@ export class SquidGenerator {
     return match[1].toLowerCase().replace(/_/g, '-');
   }
 
-  private prepareTemplateData(project: GeneratedProject): any {
-    const networks = project.networks.map(networkName => {
+  private prepareContractTemplateData(project: GeneratedProject): ContractTemplateData {
+    const contracts = project.contracts.map((contract, index) => {
+      return this.processContractForTemplate(contract, index === project.contracts.length - 1);
+    });
+
+    return {
+      projectName: project.name,
+      projectDescription: project.description,
+      contracts
+    };
+  }
+
+  private prepareNetworkBasedTemplateData(project: GeneratedProject): NetworkBasedTemplateData {
+    const networks = project.networks.map((networkName, index) => {
       const networkConfig = NETWORK_CONFIGS[networkName];
       if (!networkConfig) {
         throw new Error(`Unknown network: ${networkName}`);
@@ -240,28 +267,8 @@ export class SquidGenerator {
       const shortName = this.extractShortNetworkName(networkConfig.rpcEndpoint);
       
       const contracts = project.contracts.map(contract => {
-        const contractNameLower = this.decapitalize(contract.name);
-        const contractNameCamel = this.camelCase(contract.name);
-        const abiFileName = path.basename(contract.abiPath, '.json');
-        const abiImportName = this.toCamelCase(abiFileName);
+        const processedContract = this.processContractForTemplate(contract);
         
-        const events = contract.events.map(event => {
-          const eventNameLower = this.decapitalize(event.name);
-          
-          const eventFields = event.abiEvent.inputs.map((input: any, index: number, array: any[]) => ({
-            fieldName: input.name,
-            fieldType: mapSolidityTypeToGraphQL(input.type),
-            last: index === array.length - 1
-          }));
-
-          return {
-            name: event.name,
-            eventNameLower,
-            contractNameLower,
-            eventFields
-          };
-        });
-
         const instances = contract.instances.map(instance => ({
           name: instance.name,
           address: instance.address,
@@ -274,12 +281,7 @@ export class SquidGenerator {
         const hasInstancesOnNetwork = instances.some(instance => instance.isOnNetwork);
 
         return {
-          name: contract.name,
-          contractNameLower,
-          contractNameCamel,
-          abiFileName,
-          abiImportName,
-          events,
+          ...processedContract,
           instances,
           hasInstancesOnNetwork
         };
@@ -291,62 +293,68 @@ export class SquidGenerator {
         gateway: networkConfig.gateway,
         rpcEndpoint: networkConfig.rpcEndpoint,
         finalityConfirmation: networkConfig.finalityConfirmation,
-        contracts
+        contracts,
+        last: index === project.networks.length - 1
       };
     });
 
     // For schema.graphql and other templates that need all contracts
-    const allContracts = project.contracts.map(contract => {
-      const contractNameLower = this.decapitalize(contract.name);
-      const contractNameCamel = this.camelCase(contract.name);
-      const abiFileName = path.basename(contract.abiPath, '.json');
-      const abiImportName = this.toCamelCase(abiFileName);
-      
-      const events = contract.events.map(event => {
-        const eventNameLower = this.decapitalize(event.name);
-        
-        const eventFields = event.abiEvent.inputs.map((input: any, index: number, array: any[]) => ({
-          fieldName: input.name,
-          fieldType: mapSolidityTypeToGraphQL(input.type),
-          last: index === array.length - 1
-        }));
-
-        return {
-          name: event.name,
-          eventNameLower,
-          contractNameLower,
-          contractName: contract.name,
-          eventFields
-        };
-      });
-
-      return {
-        name: contract.name,
-        contractNameLower,
-        contractNameCamel,
-        abiFileName,
-        abiImportName,
-        events
-      };
+    const contracts = project.contracts.map((contract, index) => {
+      return this.processContractForTemplate(contract, index === project.contracts.length - 1);
     });
-
-    // Add last flags for mustache templates
-    const networksWithLast = networks.map((network, index) => ({
-      ...network,
-      last: index === networks.length - 1
-    }));
-
-    const contractsWithLast = allContracts.map((contract, index) => ({
-      ...contract,
-      last: index === allContracts.length - 1
-    }));
 
     return {
       projectName: project.name,
       projectDescription: project.description,
-      networks: networksWithLast,
-      contracts: contractsWithLast
+      networks,
+      contracts
     };
+  }
+
+  private processContractForTemplate(contract: ProcessedContract, isLast: boolean = false): ProcessedContractForTemplate {
+    const contractNameLower = this.decapitalize(contract.name);
+    const contractNameCamel = this.camelCase(contract.name);
+    const abiFileName = path.basename(contract.abiPath, '.json');
+    const abiImportName = this.toCamelCase(abiFileName);
+    
+    const events = contract.events.map(event => {
+      const eventNameLower = this.decapitalize(event.name);
+      
+      const eventFields = event.abiEvent.inputs.map((input: any, index: number, array: any[]) => ({
+        fieldName: input.name,
+        fieldType: mapSolidityTypeToGraphQL(input.type),
+        last: index === array.length - 1
+      }));
+
+      return {
+        name: event.name,
+        eventNameLower,
+        contractNameLower,
+        contractName: contract.name,
+        eventFields
+      };
+    });
+
+    const result: ProcessedContractForTemplate = {
+      name: contract.name,
+      contractNameLower,
+      contractNameCamel,
+      abiFileName,
+      abiImportName,
+      events,
+      last: isLast
+    };
+
+    result.instances = contract.instances.map(instance => ({
+      name: instance.name,
+      address: instance.address,
+      proxy: instance.proxy,
+      network: instance.network,
+      range: instance.range,
+      isOnNetwork: true // For dynamic templates, we include all instances
+    }));
+
+    return result;
   }
 
   private async cleanupExistingFiles(): Promise<void> {
