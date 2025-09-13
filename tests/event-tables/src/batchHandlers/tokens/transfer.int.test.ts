@@ -25,9 +25,9 @@ describe('handleTransfers integration', () => {
     let lognum = 0
 
     const decodedUsdcTestLog = {
-      from: '0xfromusdc',
-      to: '0xtousdc',
-      value: BigInt(miniHash('usdc' + 'value'))
+      from: '0xfromUsdc',
+      to: '0xtoUsdc',
+      value: BigInt(miniHash('usdc' + 'value')),
     }
     const usdcTestLog = {
       contract: {
@@ -44,8 +44,8 @@ describe('handleTransfers integration', () => {
     usdcTestLog.transactionHash = '0xmyusdctransactionhashfromlog'
 
     const decodedSqdTestLog = {
-      from: '0xfromsqd',
-      to: '0xtosqd',
+      from: '0xfromSqd',
+      to: '0xtoSqd',
       value: BigInt(miniHash('sqd' + 'value')),
     }
     const sqdTestLog = {

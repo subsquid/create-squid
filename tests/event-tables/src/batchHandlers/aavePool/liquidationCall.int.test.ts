@@ -30,7 +30,7 @@ describe('handleLiquidationCalls integration', () => {
       user: '0xuserMain',
       debtToCover: BigInt(miniHash('main' + 'debtToCover')),
       liquidatedCollateralAmount: BigInt(miniHash('main' + 'liquidatedCollateralAmount')),
-      liquidator: '0xliqudatorMain',
+      liquidator: '0xliquidatorMain',
       receiveAToken: true,
     }
     const mainTestLog = {
@@ -53,7 +53,7 @@ describe('handleLiquidationCalls integration', () => {
       'ethereum-mainnet',
       ctx,
       [mainTestLog],
-      { transfers: [] }
+      { transfers: [],  }
     )
 
     expect(liquidationCalls).toHaveLength(1)
