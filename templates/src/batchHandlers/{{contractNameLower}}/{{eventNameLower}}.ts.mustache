@@ -17,9 +17,16 @@ export async function handle{{eventName}}s(
   network: NetworkName,
   ctx: ProcessorContext,
   logs: DecodedLogWithContractMetadata[],
-  previouslyProcessed: {}
+  previouslyProcessed: {
+{{#previouslyProcessed}}
+    {{previouslyProcessedField}}: {{previouslyProcessedFieldType}}[],
+{{/previouslyProcessed}}
+  },
 ): Promise<{
-  {{eventNameLower}}s: {{contractName}}{{eventName}}[]
+{{#previouslyProcessed}}
+    {{previouslyProcessedField}}: {{previouslyProcessedFieldType}}[],
+{{/previouslyProcessed}}
+  {{eventNameLower}}s: {{contractName}}{{eventName}}[],
 }> {
 
   const {{eventNameLower}}s = logs.map(l => new {{contractName}}{{eventName}}({
@@ -35,5 +42,8 @@ export async function handle{{eventName}}s(
 
   await ctx.store.insert({{eventNameLower}}s)
 
-  return { {{eventNameLower}}s }
+  return {
+    ...previouslyProcessed,
+    {{eventNameLower}}s,
+  }
 }
