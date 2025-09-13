@@ -183,9 +183,20 @@ export class SquidGenerator {
           .replace('{{contractNameLower}}', contractData.contractNameLower)
           .replace('{{eventNameLower}}', eventData.eventNameLower)
           .replace('.mustache', '');
-        
+
         const outputPath = path.join(this.options.outputDir, outputFileName);
-        
+
+        // Find the corresponding contract and event in the original project data
+        const originalContract = project.contracts.find(c => c.name === contractData.name);
+        const originalEvent = originalContract?.events.find(e => e.name === eventData.name);
+
+        if (!originalContract || !originalEvent) {
+          throw new Error(`Could not find original contract/event data for ${contractData.name}.${eventData.name}`);
+        }
+
+        // Get previously processed fields for this event
+        const previouslyProcessed = this.getPreviouslyProcessedFields(project, originalContract, originalEvent);
+
         // Use contractData directly - it already has all the needed data
         const specificTemplateData = {
           ...templateData,
@@ -194,9 +205,10 @@ export class SquidGenerator {
           eventName: eventData.name,
           eventNameLower: eventData.eventNameLower,
           eventFields: eventData.eventFields,
-          instances: contractData.instances // Already included if needed
+          instances: contractData.instances,
+          previouslyProcessed
         };
-        
+
         await this.renderTemplateWithData(templatePath, outputPath, specificTemplateData);
       }
     }
@@ -355,6 +367,49 @@ export class SquidGenerator {
     }));
 
     return result;
+  }
+
+  private getAllEventsInOrder(project: GeneratedProject): Array<{contract: ProcessedContract, event: ProcessedEvent, eventIndex: number}> {
+    const allEvents: Array<{contract: ProcessedContract, event: ProcessedEvent, eventIndex: number}> = [];
+
+    for (const contract of project.contracts) {
+      for (let eventIndex = 0; eventIndex < contract.events.length; eventIndex++) {
+        allEvents.push({
+          contract,
+          event: contract.events[eventIndex],
+          eventIndex
+        });
+      }
+    }
+
+    return allEvents;
+  }
+
+  private getPreviouslyProcessedFields(project: GeneratedProject, currentContract: ProcessedContract, currentEvent: ProcessedEvent): Array<{previouslyProcessedField: string, previouslyProcessedFieldType: string}> {
+    const allEvents = this.getAllEventsInOrder(project);
+    const currentEventIndex = allEvents.findIndex(ae => 
+      ae.contract.name === currentContract.name && ae.event.name === currentEvent.name
+    );
+    
+    if (currentEventIndex === 0) {
+      // First event has no previously processed fields
+      return [];
+    }
+    
+    const previouslyProcessedFields: Array<{previouslyProcessedField: string, previouslyProcessedFieldType: string}> = [];
+    
+    // Add all events that come before the current one
+    for (let i = 0; i < currentEventIndex; i++) {
+      const prevEvent = allEvents[i];
+      const fieldName = this.decapitalize(prevEvent.event.name) + 's'; // pluralize
+      const fieldType = prevEvent.contract.name + prevEvent.event.name;
+      previouslyProcessedFields.push({
+        previouslyProcessedField: fieldName,
+        previouslyProcessedFieldType: fieldType
+      });
+    }
+    
+    return previouslyProcessedFields;
   }
 
   private async cleanupExistingFiles(): Promise<void> {
