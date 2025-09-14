@@ -60,7 +60,7 @@ export const config: FullConfig = {
   'ethereum-mainnet': {
     gateway: 'https://v2.archive.subsquid.io/network/ethereum-mainnet',
     rpcEndpoint: process.env.RPC_ETH_HTTP,
-    finalityConfirmation: 75,
+    finalityConfirmation: 64,
     requests: [
       {
         contract: 'Tokens',
@@ -99,7 +99,7 @@ export const config: FullConfig = {
   'arbitrum-one': {
     gateway: 'https://v2.archive.subsquid.io/network/arbitrum-one',
     rpcEndpoint: process.env.RPC_ARBITRUM_ONE_HTTP,
-    finalityConfirmation: 15,
+    finalityConfirmation: 120,
     requests: [
       {
         contract: 'Tokens',
