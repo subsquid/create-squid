@@ -61,7 +61,7 @@ export async function runCodeGeneration(outputDir: string, generatedFiles: Set<s
  * Installs npm dependencies
  */
 export async function installDependencies(outputDir: string, generatedFiles: Set<string>): Promise<void> {
-  console.log('Installing dependencies (may take a while)...');
+  console.log('Running npm install (may take a while)...');
   
   try {
     execSync('npm install --progress=false', {

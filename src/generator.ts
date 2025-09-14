@@ -150,7 +150,7 @@ export class SquidGenerator {
    * @throws {TemplateError} When template rendering fails
    * @throws {Error} When output directory doesn't exist
    */
-  public async generate(): Promise<void> {
+  public async generate(): Promise<string[]> {
     console.log('Starting squid project generation...');
 
     // Ensure output directory exists (should already exist with createSquid.yaml and ./abi)
@@ -172,17 +172,30 @@ export class SquidGenerator {
       SquidGenerator.PRESERVED_DIRS
     );
 
+    let remainingActions = [
+      'npm install',
+      'npx @subsquid/typeorm-codegen',
+      'npx @subsquid/evm-typegen src/abi abi/* --multicall'
+    ]
+
     // Install dependencies
     if (!this.options.skipInstall) {
       await installDependencies(this.options.outputDir, this.generatedFiles);
+      remainingActions = remainingActions.filter(a => a !== 'npm install');
     }
 
     // Run external code generation tools
     if (!this.options.skipCodegen) {
       await runCodeGeneration(this.options.outputDir, this.generatedFiles);
+      remainingActions = remainingActions.filter(a =>
+        a !== 'npx @subsquid/evm-typegen src/abi abi/* --multicall' &&
+        a !== 'npx @subsquid/typeorm-codegen'
+      )
     }
 
-    console.log('Squid project generated successfully!');
+    console.log('Codegen successful');
+
+    return remainingActions;
   }
 
   /**

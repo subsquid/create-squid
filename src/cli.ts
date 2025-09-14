@@ -57,13 +57,32 @@ program
       console.log(chalk.gray(`Description: ${generatorOptions.projectDescription}`));
 
       const generator = new SquidGenerator(configPath, generatorOptions);
-      await generator.generate();
+      const remainingActions = await generator.generate();
 
-      console.log(chalk.green('Project generated successfully!'));
-      console.log(chalk.blue('\nNext steps:'));
+      console.log(chalk.green('Squid generated successfully! Next steps:'));
+      
+      if (remainingActions.length > 0) {
+        console.log(chalk.blue('\nComplete the skipped code generation steps:'));
+        for (let step of remainingActions) {
+          console.log(chalk.gray(`  ${step}`))
+        }
+      }
+      
+      console.log(chalk.blue('\nBuild the project'));
       console.log(chalk.gray('  npm run build'));
+      
+      console.log(chalk.blue('\nPrepare the database'));
+      console.log(chalk.gray('  docker compose up -d'));
+      console.log(chalk.gray('  npx @subsquid/typeorm-migration generate'));
+      console.log(chalk.gray('  npx @subsquid/typeorm-migration apply'));
+      
+      console.log(chalk.blue('\nRun tests'));
       console.log(chalk.gray('  npm test'));
 
+      console.log(chalk.blue('\nStart the indexer'));
+      console.log(chalk.gray('  npm i -g @subsquid/cli'));
+      console.log(chalk.gray('  sqd run .'))
+      console.log(chalk.blue('Note: you _can_ run the indexer without installing @subsquid/cli, but you\'ll need to run one command per network + one for the GraphQL server, all in separate terminals. See "sqd process*" and "sqd serve" commands definitions at commands.json'))
     } catch (error) {
       console.error(chalk.red('Error generating project:'), error);
       process.exit(1);
