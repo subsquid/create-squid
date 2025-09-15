@@ -174,8 +174,8 @@ export class SquidGenerator {
 
     let remainingActions = [
       'npm install',
-      'npx @subsquid/typeorm-codegen',
-      'npx @subsquid/evm-typegen src/abi abi/* --multicall'
+      'npx -p @subsquid/typeorm-codegen squid-typeorm-codegen',
+      'npx -p @subsquid/evm-typegen squid-evm-typegen src/abi abi/* --multicall'
     ]
 
     // Install dependencies
@@ -188,8 +188,8 @@ export class SquidGenerator {
     if (!this.options.skipCodegen) {
       await runCodeGeneration(this.options.outputDir, this.generatedFiles);
       remainingActions = remainingActions.filter(a =>
-        a !== 'npx @subsquid/evm-typegen src/abi abi/* --multicall' &&
-        a !== 'npx @subsquid/typeorm-codegen'
+        a !== 'npx -p @subsquid/typeorm-codegen squid-typeorm-codegen' &&
+        a !== 'npx -p @subsquid/evm-typegen squid-evm-typegen src/abi abi/* --multicall'
       )
     }
 
