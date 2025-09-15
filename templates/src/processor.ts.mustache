@@ -26,20 +26,24 @@ export function createProcessor({
     // squids, providing pre-filtered data in chunks of roughly 1-10k blocks.
     // Set this for a fast sync.
     .setGateway(gateway)
-    // Another data source squid processors can use is chain RPC.
-    // In this particular squid it is used to retrieve the very latest chain data
-    // (including unfinalized blocks) in real time. It can also be used to
-    //   - make direct RPC queries to get extra data during indexing
-    //   - sync a squid without a gateway (slow)
-    .setRpcEndpoint(rpcEndpoint)
+    // .setFields() is for choosing data fields for all data items selected by
+    // the .addXXX() methods
+    .setFields(fieldSelection)
+
+  // Another data source squid processors can use is chain RPC.
+  // In this particular squid it is used to retrieve the very latest chain data
+  // (including unfinalized blocks) in real time. It can also be used to
+  //   - make direct RPC queries to get extra data during indexing
+  //   - sync a squid without a gateway (slow)
+  if (rpcEndpoint) {
+    processor.setRpcEndpoint(rpcEndpoint)
     // The processor needs to know how many newest blocks it should mark as "hot".
     // If it detects a blockchain fork, it will roll back any changes to the
     // database made due to orphaned blocks, then re-run the processing for the
     // main chain blocks.
-    .setFinalityConfirmation(finalityConfirmation)
-    // .setFields() is for choosing data fields for all data items selected by
-    // the .addXXX() methods
-    .setFields(fieldSelection)
+    // Only needed when ingesting from RPC - all gateway data is final.
+    processor.setFinalityConfirmation(finalityConfirmation)
+  }
 
   for (let {addresses, events, range} of requests) {
     const cleanAddresses = Object.values(addresses)
