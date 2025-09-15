@@ -1,36 +1,31 @@
-# Create Squid Generator
+# create-squid
 
-A TypeScript package for automatically generating blockchain indexer projects using Subsquid framework. This tool takes a YAML configuration file and generates a complete squid project with all necessary files, including batch handlers, TypeORM models, and tests.
+Code generation tool for [Subsquid](https://docs.sqd.ai) indexers a.k.a. squids. Capabilities:
 
-## Features
+ - works with EVM smart contracts;
+ - makes multichain indexers;
+ - fetches and decodes event logs, then stores them into Postgres;
+ - has tests.
 
-- 🚀 **Automatic Project Generation**: Generate complete squid projects from a simple YAML configuration
-- 📝 **Template-Based**: Uses Mustache templates for flexible code generation
-- 🔧 **External Tool Integration**: Automatically runs `squid-evm-typegen` and `squid-typeorm-codegen`
-- 🧪 **Test Generation**: Creates integration tests for all event handlers
-- 🌐 **Multi-Network Support**: Supports Ethereum, Arbitrum, Polygon, and Base networks
-- 📦 **Dependency Management**: Automatically installs required dependencies
+Limitations of the tool (will be removed in the future):
+ - it requires a YAML config - no interactive mode;
+ - it requires a JSON ABI file in the filesystem for every contract;
+ - it has some missing functionality:
+    * multiple events with the same name but different signature in a single ABI;
+    * addresses obtained by event decoding will not be consistent with the addresses used in the rest of the data: they will be in mixed case while the SDK-related addresses will be in flat lower case.
 
-## Installation
+**Requirements:** NodeJS v20 or newer, Docker
 
-```bash
-npm install create-squid-generator
-```
+## Quickstart
 
-## Quick Start
+1. Create a folder for your new squid project, then a `./abi` subfolder in it.
 
-### 1. Create a Configuration File
-
-```bash
-npx create-squid init
-```
-
-This creates a sample `createSquid.yaml` file in the current directory:
+2. Create a sample `createSquid.yaml` file in the current directory:
 
 ```yaml
-style: batchHandlers
-target:
-  type: postgres
+# yaml-language-server: $schema=https://cdn.subsquid.io/create-squid/create-squid.schema.json
+name: create-squid-ref-event-tables
+description: Reference squid for the one-table-per-event mode of the create-squid utility
 contracts:
   - name: Tokens
     abi: ./abi/erc20.json
@@ -40,6 +35,11 @@ contracts:
         network: ethereum-mainnet
         range:
           from: 6082465
+      - address: "0x1337420dED5ADb9980CFc35f8f2B054ea86f8aB1"
+        name: sqd
+        network: arbitrum-one
+        range:
+          from: 194120655
     events:
       - "Transfer(address,address,uint256)"
   - name: AavePool
@@ -54,179 +54,11 @@ contracts:
     events:
       - "LiquidationCall(address,address,address,uint256,uint256,address,bool)"
 ```
+Edit the top line to supply the schema file to your IDE. If you're working with an editor that doesn't use a language server, find the list of available networks [here](https://cdn.subsquid.io/archives/evm.json).
 
-### 2. Add Your ABI Files
+3. Edit `createSquid.yaml` to request all the events you need from your contracts. Save all ABIs you're using to `./abi`.
 
-Place your ABI JSON files in the `./abi` directory as referenced in the configuration.
+4. Run `npm create squid`.
+    - if you prefer Yarn or PNPM to NPM, run `npm create squid --skip-install --skip-external-codegens` instead.
 
-### 3. Generate the Project
-
-```bash
-npx create-squid generate .
-```
-
-This will generate the squid project in the current directory, overwriting any existing generated files while preserving your `createSquid.yaml` and `./abi` folder.
-
-## Configuration Reference
-
-### Top-Level Configuration
-
-- `style`: Must be `batchHandlers` (currently the only supported style)
-- `target.type`: Must be `postgres` (currently the only supported target)
-- `contracts`: Array of contract configurations
-
-### Contract Configuration
-
-Each contract in the `contracts` array should have:
-
-- `name`: Contract name (used for generated types and handlers)
-- `abi`: Path to the ABI JSON file (relative to config file)
-- `instances`: Array of contract instances to monitor
-- `events`: Array of event signatures to track
-
-### Contract Instance Configuration
-
-Each instance should have:
-
-- `address`: Contract address
-- `name`: Instance name (used for identification)
-- `network`: Network name (e.g., `ethereum-mainnet`, `arbitrum-one`)
-- `range.from`: Starting block number
-- `range.to`: (Optional) Ending block number
-- `proxy`: (Optional) Proxy contract address
-
-### Event Signatures
-
-Event signatures should follow the format: `EventName(type1,type2,type3)`
-
-Example: `"Transfer(address,address,uint256)"`
-
-## Supported Networks
-
-- `ethereum-mainnet`
-- `arbitrum-one`
-- `polygon-mainnet`
-- `base-mainnet`
-
-## CLI Commands
-
-### Generate Project
-
-```bash
-npx create-squid generate <config> <output> [options]
-```
-
-Options:
-- `-n, --name <name>`: Project name (default: "my-squid")
-- `-d, --description <description>`: Project description
-- `--skip-install`: Skip npm install
-- `'--skip-external-codegens`: Skip external code generators such as those used for ABI helpers, ORM code etc
-
-### Initialize Configuration
-
-```bash
-npx create-squid init [output]
-```
-
-Creates a sample configuration file.
-
-## Generated Project Structure
-
-```
-my-squid/
-├── package.json
-├── tsconfig.json
-├── jest.config.js
-├── squid.yaml
-├── schema.graphql
-├── abi/
-│   ├── erc20.json
-│   └── aave-pool.json
-└── src/
-    ├── main.ts
-    ├── processor.ts
-    ├── config.ts
-    ├── types/
-    │   ├── config.ts
-    │   └── extendedData.ts
-    ├── abi/           # Generated by squid-evm-typegen
-    ├── model/         # Generated by squid-typeorm-codegen
-    ├── batchHandlers/
-    │   ├── tokens/
-    │   │   ├── transfer.ts
-    │   │   └── transfer.int.test.ts
-    │   └── aavepool/
-    │       ├── liquidationcall.ts
-    │       └── liquidationcall.int.test.ts
-    └── testing/
-        ├── defaultObjects.ts
-        └── testDatabase.ts
-```
-
-## Programmatic Usage
-
-```typescript
-import { SquidGenerator } from 'create-squid-generator';
-
-const generator = new SquidGenerator('./createSquid.yaml', {
-  outputDir: '.', // Current directory
-  projectName: 'my-squid',
-  projectDescription: 'My blockchain indexer',
-  skipInstall: false,
-  skipCodegen: false
-});
-
-await generator.generate();
-```
-
-## Development
-
-### Building
-
-```bash
-npm run build
-```
-
-### Testing
-
-```bash
-npm test
-```
-
-### Development Mode
-
-```bash
-npm run dev
-```
-
-## How It Works
-
-1. **Configuration Parsing**: Reads and validates the YAML configuration file
-2. **ABI Processing**: Parses ABI files to extract event information
-3. **Template Rendering**: Uses Mustache templates to generate source files
-4. **External Code Generation**: Runs `squid-evm-typegen` and `squid-typeorm-codegen`
-5. **Dependency Installation**: Installs required npm packages
-
-## Template System
-
-The generator uses Mustache templates located in the `templates/` directory. Templates support:
-
-- Variable substitution: `{{projectName}}`
-- Conditional rendering: `{{#networks}}...{{/networks}}`
-- Helper functions: `{{#isNetwork}}...{{/isNetwork}}`
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## License
-
-MIT
-
-## Support
-
-For issues and questions, please open an issue on the GitHub repository.
+5. Follow the post-generation instructions from tool's stdout.
