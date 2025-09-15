@@ -1,4 +1,5 @@
-name: create-squid-ref-event-tables
+# yaml-language-server: $schema=https://cdn.subsquid.io/create-squid/create-squid.schema.json
+name: create-squid-ref-event-2
 description: Reference squid for the one-table-per-event mode of the create-squid utility
 contracts:
   - name: NetworkControllers
