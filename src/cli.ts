@@ -73,8 +73,8 @@ program
       
       console.log(chalk.blue('\nPrepare the database'));
       console.log(chalk.gray('  docker compose up -d'));
-      console.log(chalk.gray('  npx @subsquid/typeorm-migration generate'));
-      console.log(chalk.gray('  npx @subsquid/typeorm-migration apply'));
+      console.log(chalk.gray('  npx squid-typeorm-migration generate'));
+      console.log(chalk.gray('  npx squid-typeorm-migration apply'));
       
       console.log(chalk.blue('\nRun tests'));
       console.log(chalk.gray('  npm test'));
