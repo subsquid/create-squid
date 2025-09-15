@@ -4,6 +4,5 @@ export * from './types';
 export { NETWORK_CONFIGS } from './network-configs';
 export * from './string-transforms/casing';
 export * from './string-transforms/event';
-export * from './string-transforms/network';
 export * from './filesystem';
 export * from './external-calls';

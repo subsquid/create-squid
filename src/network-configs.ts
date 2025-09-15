@@ -88,7 +88,7 @@ async function fetchNetworkConfigs(): Promise<Record<string, NetworkInfo>> {
         rawRpcAbbreviation = rpcLore.cloudRpcId;
         rpcEndpoint = `RPC_${toMacroCase(rpcLore.cloudRpcId)}_HTTP`;
       } else {
-        rpcEndpoint = 'null';
+        rpcEndpoint = `RPC_${toMacroCase(archive.id)}_HTTP`;
       }
 
       // Get public RPC URL (empty string if not available)

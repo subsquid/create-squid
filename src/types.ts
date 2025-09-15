@@ -120,7 +120,7 @@ export interface ProcessedContractForTemplate {
 
 export interface NetworkTemplateData {
   name: string;
-  shortName: string;
+  shortName: string | null;
   gateway: string;
   rpcEndpoint: string;
   finalityConfirmation: number;

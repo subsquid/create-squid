@@ -27,7 +27,6 @@ import {
   toSnakeCase,
   capitalize
 } from './string-transforms/casing';
-import { extractShortNetworkName } from './string-transforms/network';
 import { cleanupExistingFiles } from './filesystem';
 import { runCodeGeneration, installDependencies } from './external-calls';
 
@@ -412,7 +411,7 @@ async function prepareNetworkBasedTemplateData(project: GeneratedProject): Promi
       throw new Error(`Unknown network: ${networkName}`);
     }
     
-    const shortName = extractShortNetworkName(networkConfig.rpcEndpoint);
+    const shortName = networkConfig.rawRpcAbbreviation;
     
     const contracts = project.contracts.map(contract => {
       const processedContract = processContractForTemplate(contract, false, allEvents);
