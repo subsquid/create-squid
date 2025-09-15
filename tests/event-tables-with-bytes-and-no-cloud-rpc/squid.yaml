@@ -1,0 +1,25 @@
+manifestVersion: subsquid.io/v0.1
+name: create-squid-ref-event-tables
+description: Reference squid for the one-table-per-event mode of the create-squid utility
+build: 
+deploy:
+  addons:
+    postgres: 
+    rpc:
+      - arbitrum-one.http
+      - eth.http
+  processor:
+    - name: arbitrum-one-processor
+      cmd: [ "sqd", "process:arbitrum-one:prod" ]
+    - name: 0g-testnet-processor
+      cmd: [ "sqd", "process:0g-testnet:prod" ]
+    - name: ethereum-mainnet-processor
+      cmd: [ "sqd", "process:ethereum-mainnet:prod" ]
+  api:
+    cmd:
+      - sqd
+      - serve:prod
+#scale:
+#  addons:
+#    postgres:
+#      storage: 200G

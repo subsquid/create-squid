@@ -1,0 +1,31 @@
+type NetworkControllersAllowedVestedTargetUpdated @entity {
+  id: ID!
+  network: String!
+  instanceAddress: String!
+  block: Int!
+  txnHash: String!
+  target: String!
+  isAllowed: Boolean!
+}
+
+type NetworkControllersLockPeriodUpdated @entity {
+  id: ID!
+  network: String!
+  instanceAddress: String!
+  block: Int!
+  txnHash: String!
+  lockPeriod: BigInt!
+}
+
+type DistributedRewardsDistributionApproved @entity {
+  id: ID!
+  network: String!
+  instanceAddress: String!
+  block: Int!
+  txnHash: String!
+  who: String!
+  fromBlock: BigInt!
+  toBlock: BigInt!
+  commitment: Bytes!
+}
+

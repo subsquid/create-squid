@@ -1,0 +1,35 @@
+name: create-squid-ref-event-tables
+description: Reference squid for the one-table-per-event mode of the create-squid utility
+contracts:
+  - name: NetworkControllers
+    abi: ./abi/networkController.json
+    instances:
+      - address: "0xf5462EF65Ca8a9Cca789c912Bc8ada80b582d68d"
+        name: main
+        network: arbitrum-one
+        range:
+          from: 6082465
+      - address: "0xf5462EF65Ca8a9Cca789c912Bc8ada80b582d68d"
+        name: aux
+        network: 0g-testnet
+        range:
+          from: 194120655
+    events:
+      - "AllowedVestedTargetUpdated(address,bool)"
+      - "LockPeriodUpdated(uint256)"
+  - name: DistributedRewardsDistribution
+    abi: ./abi/distributedRewardsDistribution.json
+    instances:
+      - address: "0x02D84abD89Ee9DB409572f19B6e1596c301F3c81"
+        proxy: "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"
+        name: primary
+        network: ethereum-mainnet
+        range:
+          from: 11362579
+      - address: "0x02D84abD89Ee9DB409572f19B6e1596c301F3c81"
+        name: secondary
+        network: arbitrum-one
+        range:
+          from: 11362579
+    events:
+      - "Approved(address,uint256,uint256,bytes32)"
