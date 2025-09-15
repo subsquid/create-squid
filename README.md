@@ -120,7 +120,7 @@ Options:
 - `-n, --name <name>`: Project name (default: "my-squid")
 - `-d, --description <description>`: Project description
 - `--skip-install`: Skip npm install
-- `--skip-codegen`: Skip code generation
+- `'--skip-external-codegens`: Skip external code generators such as those used for ABI helpers, ORM code etc
 
 ### Initialize Configuration
 

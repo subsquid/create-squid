@@ -15,7 +15,7 @@ program
   .description('Generate blockchain indexer projects from configuration')
   .version('0.0.0')
   .option('--skip-install', 'Skip npm install', false)
-  .option('--skip-codegen', 'Skip code generation', false)
+  .option('--skip-external-codegens', 'Skip external code generators such as those used for ABI helpers, ORM code etc', false)
   .action(async (options: any) => {
     try {
       const cwd = process.cwd();
@@ -47,7 +47,7 @@ program
         projectName: config.name,
         projectDescription: config.description,
         skipInstall: options.skipInstall,
-        skipCodegen: options.skipCodegen
+        skipCodegen: options.skipExternalCodegens
       };
 
       console.log(chalk.blue('Generating squid project...'));

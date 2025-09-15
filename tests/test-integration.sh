@@ -34,7 +34,7 @@ run_test() {
 
 	# Run the generator
 	cd "$temp_dir"
-	if ! node "$DIST_DIR/cli.js" --skip-install --skip-codegen >/dev/null 2>&1; then
+	if ! node "$DIST_DIR/cli.js" --skip-install --skip-external-codegens >/dev/null 2>&1; then
 		echo "Error: Generator failed for $example_name"
 		cd "$PROJECT_ROOT"
 		rm -rf "$temp_dir"
