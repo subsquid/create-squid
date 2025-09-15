@@ -484,6 +484,7 @@ function processContractForTemplate(
         fieldType,
         isBigInt: fieldType === 'BigInt',
         isBoolean: fieldType === 'Boolean',
+        isBytes: fieldType === 'Bytes',
         last: index === array.length - 1
       };
     });

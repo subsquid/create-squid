@@ -27,7 +27,7 @@ describe('handle{{eventName}}s integration', () => {
 {{#instances}}
     const decoded{{nameCapitalized}}TestLog = {
 {{#eventFields}}
-      {{fieldName}}: {{#isBigInt}}BigInt(miniHash('{{name}}' + '{{fieldName}}')){{/isBigInt}}{{^isBigInt}}{{#isBoolean}}true{{/isBoolean}}{{^isBoolean}}'0x{{fieldName}}{{nameCapitalized}}'{{/isBoolean}}{{/isBigInt}},
+      {{fieldName}}: {{#isBytes}}new Uint8Array(Buffer.from('{{fieldName}}{{nameCapitalized}}', 'utf8')){{/isBytes}}{{^isBytes}}{{#isBigInt}}BigInt(miniHash('{{name}}' + '{{fieldName}}')){{/isBigInt}}{{^isBigInt}}{{#isBoolean}}true{{/isBoolean}}{{^isBoolean}}'0x{{fieldName}}{{nameCapitalized}}'{{/isBoolean}}{{/isBigInt}}{{/isBytes}},
 {{/eventFields}}
     }
     const {{name}}TestLog = {
@@ -78,7 +78,7 @@ describe('handle{{eventName}}s integration', () => {
       block: {{name}}TestLog.block.height,
       txn_hash: '0xmy{{name}}transactionhashfromlog',
 {{#eventFields}}
-      {{fieldNameSnake}}: {{#isBigInt}}decoded{{nameCapitalized}}TestLog.{{fieldName}}.toString(){{/isBigInt}}{{^isBigInt}}decoded{{nameCapitalized}}TestLog.{{fieldName}}{{/isBigInt}},
+      {{fieldNameSnake}}: {{#isBytes}}Object.fromEntries(decoded{{nameCapitalized}}TestLog.{{fieldName}}.entries()){{/isBytes}}{{^isBytes}}{{#isBigInt}}decoded{{nameCapitalized}}TestLog.{{fieldName}}.toString(){{/isBigInt}}{{^isBigInt}}decoded{{nameCapitalized}}TestLog.{{fieldName}}{{/isBigInt}}{{/isBytes}},
 {{/eventFields}}
     })
 {{/instances}}
