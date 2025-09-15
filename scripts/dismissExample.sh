@@ -3,7 +3,7 @@
 PWD="`pwd`"
 if [ -d "$1" ]; then
 	cd "$1"
-	rm -r db src/model src/abi node_modules package-lock.json
+	rm -r db src/model src/abi node_modules package-lock.json lib
   sqd down
 	cd "$PWD"
 else
