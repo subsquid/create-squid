@@ -1,5 +1,5 @@
 manifestVersion: subsquid.io/v0.1
-name: create-squid-ref-event-tables
+name: create-squid-ref-event-2
 description: Reference squid for the one-table-per-event mode of the create-squid utility
 build: 
 deploy:
