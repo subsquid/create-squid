@@ -85,7 +85,7 @@ export class SquidGenerator {
   private static readonly CONTRACT_TEMPLATE_PATTERNS = ['schema.graphql', 'processor.ts', 'main.ts'];
   private static readonly NETWORK_TEMPLATE_PATTERNS = ['config.ts'];
   private static readonly PRESERVED_FILES = new Set(['createSquid.yaml']);
-  private static readonly PRESERVED_DIRS = new Set(['abi']);
+  private static readonly PRESERVED_DIRS = new Set(['abi', '.git']);
 
   /**
    * Creates a new SquidGenerator instance
