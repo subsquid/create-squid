@@ -16,6 +16,10 @@ program
   .version('0.0.0')
   .option('--skip-install', 'Skip npm install', false)
   .option('--skip-external-codegens', 'Skip external code generators such as those used for ABI helpers, ORM code etc', false)
+  .option('--refresh-dot-env', 'Overwrite .env file even if it exists', false)
+  .option('--refresh-package-json', 'Overwrite package.json file even if it exists', false)
+  .option('--refresh-readme', 'Overwrite README.md file even if it exists', false)
+  .option('--full-refresh', 'Overwrite all files including protected ones (.gitignore, jest.config.js, package.json, tsconfig.json, README.md, .env)', false)
   .action(async (options: any) => {
     try {
       const cwd = process.cwd();
@@ -47,7 +51,11 @@ program
         projectName: config.name,
         projectDescription: config.description,
         skipInstall: options.skipInstall,
-        skipCodegen: options.skipExternalCodegens
+        skipCodegen: options.skipExternalCodegens,
+        refreshDotEnv: options.refreshDotEnv,
+        refreshPackageJson: options.refreshPackageJson,
+        refreshReadme: options.refreshReadme,
+        fullRefresh: options.fullRefresh
       };
 
       console.log(chalk.blue('Generating squid project...'));

@@ -72,6 +72,10 @@ export interface GeneratorOptions {
   projectDescription: string;
   skipInstall?: boolean;
   skipCodegen?: boolean;
+  refreshDotEnv?: boolean;
+  refreshPackageJson?: boolean;
+  refreshReadme?: boolean;
+  fullRefresh?: boolean;
 }
 
 export interface EventField {

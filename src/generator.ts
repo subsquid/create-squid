@@ -86,6 +86,16 @@ export class SquidGenerator {
   private static readonly NETWORK_TEMPLATE_PATTERNS = ['config.ts'];
   private static readonly PRESERVED_FILES = new Set(['createSquid.yaml']);
   private static readonly PRESERVED_DIRS = new Set(['abi', '.git']);
+  
+  // Files that should be protected from overwriting by default
+  private static readonly PROTECTED_FILES = new Set([
+    '.gitignore',
+    'jest.config.js',
+    'package.json',
+    'tsconfig.json',
+    'README.md',
+    '.env'
+  ]);
 
   /**
    * Creates a new SquidGenerator instance
@@ -99,6 +109,41 @@ export class SquidGenerator {
     this.config = this.loadConfig(configPath);
     this.options = options;
     this.templatesDir = path.join(__dirname, '..', 'templates');
+  }
+
+  /**
+   * Checks if a file should be overwritten based on the current options
+   * 
+   * @param fileName - The name of the file to check
+   * @returns True if the file should be overwritten, false otherwise
+   */
+  private shouldOverwriteFile(fileName: string): boolean {
+    // If full refresh is enabled, overwrite all files
+    if (this.options.fullRefresh) {
+      return true;
+    }
+    
+    // If the file is not protected, always overwrite
+    if (!SquidGenerator.PROTECTED_FILES.has(fileName)) {
+      return true;
+    }
+    
+    // Check specific flags for protected files
+    switch (fileName) {
+      case '.env':
+        return this.options.refreshDotEnv || false;
+      case 'package.json':
+        return this.options.refreshPackageJson || false;
+      case 'README.md':
+        return this.options.refreshReadme || false;
+      case '.gitignore':
+      case 'jest.config.js':
+      case 'tsconfig.json':
+        // These files can only be overwritten with --full-refresh
+        return false;
+      default:
+        return true;
+    }
   }
 
   /**
@@ -352,6 +397,18 @@ export class SquidGenerator {
       
       // Ensure output directory exists
       await fs.ensureDir(path.dirname(outputPath));
+      
+      // Check if we should overwrite this file
+      const fileName = path.basename(outputPath);
+      const fileExists = await fs.pathExists(outputPath);
+      
+      if (fileExists && !this.shouldOverwriteFile(fileName)) {
+        console.log(`Skipping ${fileName} (file exists and overwrite not requested)`);
+        // Still track this file as "generated" so it doesn't get cleaned up
+        const relativePath = path.relative(this.options.outputDir, outputPath);
+        this.generatedFiles.add(relativePath);
+        return;
+      }
       
       await fs.writeFile(outputPath, rendered);
       
