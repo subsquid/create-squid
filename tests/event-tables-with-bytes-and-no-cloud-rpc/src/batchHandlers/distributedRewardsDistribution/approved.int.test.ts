@@ -42,6 +42,7 @@ describe('handleApproveds integration', () => {
     primaryTestLog.id = lognum.toString()
     lognum += 1
     primaryTestLog.block.height = miniHash('primary' + 'height')
+    primaryTestLog.block.timestamp = miniHash('primary' + 'timestamp')
     primaryTestLog.transactionHash = '0xmyprimarytransactionhashfromlog'
 
     const decodedSecondaryTestLog = {
@@ -62,6 +63,7 @@ describe('handleApproveds integration', () => {
     secondaryTestLog.id = lognum.toString()
     lognum += 1
     secondaryTestLog.block.height = miniHash('secondary' + 'height')
+    secondaryTestLog.block.timestamp = miniHash('secondary' + 'timestamp')
     secondaryTestLog.transactionHash = '0xmysecondarytransactionhashfromlog'
 
     // Minimal ProcessorContext mock
@@ -77,12 +79,14 @@ describe('handleApproveds integration', () => {
     expect(approveds[0]).toMatchObject({
       id: primaryTestLog.id,
       block: primaryTestLog.block.height,
+      blockTimestamp: BigInt(primaryTestLog.block.timestamp),
       ...decodedPrimaryTestLog,
       txnHash: '0xmyprimarytransactionhashfromlog',
     })
     expect(approveds[1]).toMatchObject({
       id: secondaryTestLog.id,
       block: secondaryTestLog.block.height,
+      blockTimestamp: BigInt(secondaryTestLog.block.timestamp),
       ...decodedSecondaryTestLog,
       txnHash: '0xmysecondarytransactionhashfromlog',
     })
@@ -98,6 +102,7 @@ describe('handleApproveds integration', () => {
     expect(dbTransfers[0]).toMatchObject({
       id: primaryTestLog.id,
       block: primaryTestLog.block.height,
+      block_timestamp: primaryTestLog.block.timestamp.toString(),
       txn_hash: '0xmyprimarytransactionhashfromlog',
       who: decodedPrimaryTestLog.who,
       from_block: decodedPrimaryTestLog.fromBlock.toString(),
@@ -107,6 +112,7 @@ describe('handleApproveds integration', () => {
     expect(dbTransfers[1]).toMatchObject({
       id: secondaryTestLog.id,
       block: secondaryTestLog.block.height,
+      block_timestamp: secondaryTestLog.block.timestamp.toString(),
       txn_hash: '0xmysecondarytransactionhashfromlog',
       who: decodedSecondaryTestLog.who,
       from_block: decodedSecondaryTestLog.fromBlock.toString(),

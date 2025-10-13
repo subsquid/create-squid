@@ -30,6 +30,9 @@ import { handleApproveds } from './batchHandlers/distributedRewardsDistribution/
 
 // Can vary by network/processor, but we'll use a single global value here.
 export const fieldSelection = {
+  block: {
+    timestamp: true,
+  },
   log: {
     address: true,
     data: true,

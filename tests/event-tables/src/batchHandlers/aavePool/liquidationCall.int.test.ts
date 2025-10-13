@@ -45,6 +45,7 @@ describe('handleLiquidationCalls integration', () => {
     mainTestLog.id = lognum.toString()
     lognum += 1
     mainTestLog.block.height = miniHash('main' + 'height')
+    mainTestLog.block.timestamp = miniHash('main' + 'timestamp')
     mainTestLog.transactionHash = '0xmymaintransactionhashfromlog'
 
     // Minimal ProcessorContext mock
@@ -60,6 +61,7 @@ describe('handleLiquidationCalls integration', () => {
     expect(liquidationCalls[0]).toMatchObject({
       id: mainTestLog.id,
       block: mainTestLog.block.height,
+      blockTimestamp: BigInt(mainTestLog.block.timestamp),
       ...decodedMainTestLog,
       txnHash: '0xmymaintransactionhashfromlog',
     })
@@ -75,6 +77,7 @@ describe('handleLiquidationCalls integration', () => {
     expect(dbTransfers[0]).toMatchObject({
       id: mainTestLog.id,
       block: mainTestLog.block.height,
+      block_timestamp: mainTestLog.block.timestamp.toString(),
       txn_hash: '0xmymaintransactionhashfromlog',
       collateral_asset: decodedMainTestLog.collateralAsset,
       debt_asset: decodedMainTestLog.debtAsset,

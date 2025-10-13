@@ -28,6 +28,7 @@ export async function handleAllowedVestedTargetUpdateds(
     network,
     instanceAddress: l.contract.instanceAddress,
     block: l.block.height,
+    blockTimestamp: BigInt(l.block.timestamp),
     txnHash: l.transactionHash,
     target: l.decoded.target,
     isAllowed: l.decoded.isAllowed,

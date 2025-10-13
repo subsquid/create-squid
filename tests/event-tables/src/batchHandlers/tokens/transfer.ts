@@ -28,6 +28,7 @@ export async function handleTransfers(
     network,
     instanceAddress: l.contract.instanceAddress,
     block: l.block.height,
+    blockTimestamp: BigInt(l.block.timestamp),
     txnHash: l.transactionHash,
     from: l.decoded.from,
     to: l.decoded.to,

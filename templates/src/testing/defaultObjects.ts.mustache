@@ -11,6 +11,7 @@ export const createDefaultBlockHeader: () => BlockHeader = () => ({
 export const createDefaultTransaction: () => Transaction = () => ({
   id: 'defaultTransactionId',
   block: createDefaultBlockHeader(),
+  blockTimestamp: 42,
   transactionIndex: 22,
   hash: 'defaultTransactionHash',
   from: 'defaultTransactionFrom',
@@ -23,6 +24,7 @@ export const createDefaultTransaction: () => Transaction = () => ({
 export const createDefaultLog: () => Log = () => ({
   id: 'defaultLogId',
   block: createDefaultBlockHeader(),
+  blockTimestamp: 53,
   transactionIndex: 33,
   logIndex: 333,
   address: 'defaultLogAddress',

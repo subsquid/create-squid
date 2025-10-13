@@ -41,6 +41,7 @@ describe('handleTransfers integration', () => {
     usdcTestLog.id = lognum.toString()
     lognum += 1
     usdcTestLog.block.height = miniHash('usdc' + 'height')
+    usdcTestLog.block.timestamp = miniHash('usdc' + 'timestamp')
     usdcTestLog.transactionHash = '0xmyusdctransactionhashfromlog'
 
     const decodedSqdTestLog = {
@@ -60,6 +61,7 @@ describe('handleTransfers integration', () => {
     sqdTestLog.id = lognum.toString()
     lognum += 1
     sqdTestLog.block.height = miniHash('sqd' + 'height')
+    sqdTestLog.block.timestamp = miniHash('sqd' + 'timestamp')
     sqdTestLog.transactionHash = '0xmysqdtransactionhashfromlog'
 
     // Minimal ProcessorContext mock
@@ -75,12 +77,14 @@ describe('handleTransfers integration', () => {
     expect(transfers[0]).toMatchObject({
       id: usdcTestLog.id,
       block: usdcTestLog.block.height,
+      blockTimestamp: BigInt(usdcTestLog.block.timestamp),
       ...decodedUsdcTestLog,
       txnHash: '0xmyusdctransactionhashfromlog',
     })
     expect(transfers[1]).toMatchObject({
       id: sqdTestLog.id,
       block: sqdTestLog.block.height,
+      blockTimestamp: BigInt(sqdTestLog.block.timestamp),
       ...decodedSqdTestLog,
       txnHash: '0xmysqdtransactionhashfromlog',
     })
@@ -96,6 +100,7 @@ describe('handleTransfers integration', () => {
     expect(dbTransfers[0]).toMatchObject({
       id: usdcTestLog.id,
       block: usdcTestLog.block.height,
+      block_timestamp: usdcTestLog.block.timestamp.toString(),
       txn_hash: '0xmyusdctransactionhashfromlog',
       from: decodedUsdcTestLog.from,
       to: decodedUsdcTestLog.to,
@@ -104,6 +109,7 @@ describe('handleTransfers integration', () => {
     expect(dbTransfers[1]).toMatchObject({
       id: sqdTestLog.id,
       block: sqdTestLog.block.height,
+      block_timestamp: sqdTestLog.block.timestamp.toString(),
       txn_hash: '0xmysqdtransactionhashfromlog',
       from: decodedSqdTestLog.from,
       to: decodedSqdTestLog.to,

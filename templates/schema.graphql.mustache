@@ -5,6 +5,7 @@ type {{contractName}}{{name}} @entity {
   network: String!
   instanceAddress: String!
   block: Int!
+  blockTimestamp: BigInt
   txnHash: String!
 {{#eventFields}}
   {{fieldName}}: {{fieldType}}!

@@ -34,6 +34,7 @@ export async function handleApproveds(
     network,
     instanceAddress: l.contract.instanceAddress,
     block: l.block.height,
+    blockTimestamp: BigInt(l.block.timestamp),
     txnHash: l.transactionHash,
     who: l.decoded.who,
     fromBlock: l.decoded.fromBlock,

@@ -33,6 +33,7 @@ export async function handle{{eventName}}s(
     network,
     instanceAddress: l.contract.instanceAddress,
     block: l.block.height,
+    blockTimestamp: BigInt(l.block.timestamp),
     txnHash: l.transactionHash,
 {{#eventFields}}
     {{fieldName}}: l.decoded.{{fieldName}},

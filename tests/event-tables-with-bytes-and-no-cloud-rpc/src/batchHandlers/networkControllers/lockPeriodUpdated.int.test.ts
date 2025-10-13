@@ -39,6 +39,7 @@ describe('handleLockPeriodUpdateds integration', () => {
     mainTestLog.id = lognum.toString()
     lognum += 1
     mainTestLog.block.height = miniHash('main' + 'height')
+    mainTestLog.block.timestamp = miniHash('main' + 'timestamp')
     mainTestLog.transactionHash = '0xmymaintransactionhashfromlog'
 
     const decodedAuxTestLog = {
@@ -56,6 +57,7 @@ describe('handleLockPeriodUpdateds integration', () => {
     auxTestLog.id = lognum.toString()
     lognum += 1
     auxTestLog.block.height = miniHash('aux' + 'height')
+    auxTestLog.block.timestamp = miniHash('aux' + 'timestamp')
     auxTestLog.transactionHash = '0xmyauxtransactionhashfromlog'
 
     // Minimal ProcessorContext mock
@@ -71,12 +73,14 @@ describe('handleLockPeriodUpdateds integration', () => {
     expect(lockPeriodUpdateds[0]).toMatchObject({
       id: mainTestLog.id,
       block: mainTestLog.block.height,
+      blockTimestamp: BigInt(mainTestLog.block.timestamp),
       ...decodedMainTestLog,
       txnHash: '0xmymaintransactionhashfromlog',
     })
     expect(lockPeriodUpdateds[1]).toMatchObject({
       id: auxTestLog.id,
       block: auxTestLog.block.height,
+      blockTimestamp: BigInt(auxTestLog.block.timestamp),
       ...decodedAuxTestLog,
       txnHash: '0xmyauxtransactionhashfromlog',
     })
@@ -92,12 +96,14 @@ describe('handleLockPeriodUpdateds integration', () => {
     expect(dbTransfers[0]).toMatchObject({
       id: mainTestLog.id,
       block: mainTestLog.block.height,
+      block_timestamp: mainTestLog.block.timestamp.toString(),
       txn_hash: '0xmymaintransactionhashfromlog',
       lock_period: decodedMainTestLog.lockPeriod.toString(),
     })
     expect(dbTransfers[1]).toMatchObject({
       id: auxTestLog.id,
       block: auxTestLog.block.height,
+      block_timestamp: auxTestLog.block.timestamp.toString(),
       txn_hash: '0xmyauxtransactionhashfromlog',
       lock_period: decodedAuxTestLog.lockPeriod.toString(),
     })
