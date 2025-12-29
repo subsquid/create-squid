@@ -22,12 +22,12 @@ import {
 } from './types/extendedData'
 
 {{#contracts}}
-import * as {{abiImportName}}Abi from './abi/{{abiFileName}}'
+import * as {{abiImportName.caMel}}Abi from './abi/{{abiFileName}}'
 {{/contracts}}
 
 {{#contracts}}
 {{#events}}
-import { handle{{name}}s } from './batchHandlers/{{contractNameCamel}}/{{eventNameLower}}'
+import { handle{{eventName.PasCal}}s } from './batchHandlers/{{contractName.caMel}}/{{eventName.caMel}}'
 {{/events}}
 {{/contracts}}
 
@@ -65,28 +65,28 @@ export type DecodedLogWithContractMetadata = _DecodedLogWithContractMetadata<typ
 
 export const config: FullConfig = {
 {{#networks}}
-  '{{name}}': {
+  '{{name.raw}}': {
     gateway: '{{{gateway}}}',
-    rpcEndpoint: process.env.{{rpcEndpoint}},
+    rpcEndpoint: process.env.{{rpcEndpoint.raw}},
     finalityConfirmation: {{finalityConfirmation}},
     requests: [
 {{#contracts}}
 {{#hasInstancesOnNetwork}}
       {
-        contract: '{{name}}',
+        contract: '{{contractName.raw}}',
         addresses: {
 {{#instances}}
 {{#isOnNetwork}}
-          '{{name}}': '{{#proxy}}{{proxy}}{{/proxy}}{{^proxy}}{{address}}{{/proxy}}'.toLowerCase(),
+          '{{name.raw}}': '{{#proxy}}{{proxy}}{{/proxy}}{{^proxy}}{{address}}{{/proxy}}'.toLowerCase(),
 {{/isOnNetwork}}
 {{/instances}}
         },
         events: [
 {{#events}}
           {
-            name: '{{name}}',
-            abiHelper: {{abiImportName}}Abi.events.{{name}},
-            batchHandler: handle{{name}}s,
+            name: '{{eventName.raw}}',
+            abiHelper: {{abiImportName.caMel}}Abi.events.{{eventName.raw}},
+            batchHandler: handle{{eventName.PasCal}}s,
           },
 {{/events}}
         ],

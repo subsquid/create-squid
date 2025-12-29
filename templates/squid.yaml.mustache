@@ -1,5 +1,5 @@
 manifestVersion: subsquid.io/v0.1
-name: {{projectName}}
+name: {{projectName.raw}}
 description: {{projectDescription}}
 build: 
 deploy:
@@ -8,13 +8,13 @@ deploy:
     rpc:
 {{#networks}}
 {{#shortName}}
-      - {{shortName}}.http
+      - {{shortName.raw}}.http
 {{/shortName}}
 {{/networks}}
   processor:
 {{#networks}}
-    - name: {{name}}-processor
-      cmd: [ "sqd", "process:{{name}}:prod" ]
+    - name: {{name.raw}}-processor
+      cmd: [ "sqd", "process:{{name.raw}}:prod" ]
 {{/networks}}
   api:
     cmd:

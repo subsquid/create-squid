@@ -1,3 +1,5 @@
+import { CasingObject } from './string-transforms/casing';
+
 export interface CreateSquidConfig {
   name: string;
   description: string;
@@ -79,8 +81,7 @@ export interface GeneratorOptions {
 }
 
 export interface EventField {
-  fieldName: string;
-  fieldNameSnake: string;
+  fieldName: CasingObject;
   fieldType: string;
   isBigInt: boolean;
   isBoolean: boolean;
@@ -88,18 +89,16 @@ export interface EventField {
 }
 
 export interface ProcessedEventForTemplate {
-  name: string;
-  eventNameLower: string;
-  contractNameLower: string;
-  contractName?: string;
+  eventName: CasingObject;
+  contractName: CasingObject;
   eventFields: EventField[];
-  previouslyProcessed: Array<{previouslyProcessedField: string, previouslyProcessedFieldType: string}>;
-  tableNameSnake: string;
+  previouslyProcessed: Array<{previouslyProcessedField: CasingObject, previouslyProcessedFieldType: CasingObject}>;
+  tableName: CasingObject;
   hasPreviouslyProcessed: boolean;
 }
 
 export interface ProcessedInstanceForTemplate {
-  name: string;
+  name: CasingObject;
   address: string;
   proxy?: string;
   network: string;
@@ -108,14 +107,14 @@ export interface ProcessedInstanceForTemplate {
     to?: number;
   } | null;
   isOnNetwork: boolean;
+  index?: number;
+  last?: boolean;
 }
 
 export interface ProcessedContractForTemplate {
-  name: string;
-  contractNameLower: string;
-  contractNameCamel: string;
+  contractName: CasingObject;
   abiFileName: string;
-  abiImportName: string;
+  abiImportName: CasingObject;
   events: ProcessedEventForTemplate[];
   instances?: ProcessedInstanceForTemplate[];
   hasInstancesOnNetwork?: boolean;
@@ -123,10 +122,10 @@ export interface ProcessedContractForTemplate {
 }
 
 export interface NetworkTemplateData {
-  name: string;
-  shortName: string | null;
+  name: CasingObject;
+  shortName: CasingObject | null;
   gateway: string;
-  rpcEndpoint: string;
+  rpcEndpoint: CasingObject;
   finalityConfirmation: number;
   publicRpcUrl: string;
   rawRpcAbbreviation: string | null;
@@ -135,13 +134,13 @@ export interface NetworkTemplateData {
 }
 
 export interface ContractTemplateData {
-  projectName: string;
+  projectName: CasingObject;
   projectDescription: string;
   contracts: ProcessedContractForTemplate[];
 }
 
 export interface NetworkBasedTemplateData {
-  projectName: string;
+  projectName: CasingObject;
   projectDescription: string;
   networks: NetworkTemplateData[];
   contracts: ProcessedContractForTemplate[];

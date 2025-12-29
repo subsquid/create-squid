@@ -1,0 +1,89 @@
+import { Store } from '@subsquid/typeorm-store'
+import {
+  setupTestDatabase,
+  type TestDatabase,
+  createDefaultLog,
+  miniHash
+} from '../../testing'
+
+import { handle{{eventName.PasCal}}s } from './{{eventName.caMel}}'
+
+describe('handle{{eventName.PasCal}}s integration', () => {
+  let db: TestDatabase
+  let store: Store
+
+  beforeAll(async () => {
+    db = await setupTestDatabase()
+    store = new Store(() => db.dataSource.manager)
+  })
+
+  afterAll(async () => {
+    await db.cleanup()
+  })
+
+  it('should process {{eventName.PasCal}} events and save them to the database', async () => {
+    let lognum = 0
+
+{{#instances}}
+    const decoded{{name.Capitalized}}TestLog = {
+{{#eventFields}}
+      {{fieldName.raw}}: {{#isBytes}}new Uint8Array(Buffer.from('{{fieldName.raw}}{{name.Capitalized}}', 'utf8')){{/isBytes}}{{^isBytes}}{{#isBigInt}}BigInt(miniHash('{{name.raw}}' + '{{fieldName.raw}}')){{/isBigInt}}{{^isBigInt}}{{#isBoolean}}true{{/isBoolean}}{{^isBoolean}}'0x{{fieldName.raw}}{{name.Capitalized}}'{{/isBoolean}}{{/isBigInt}}{{/isBytes}},
+{{/eventFields}}
+    }
+    const {{name.raw}}TestLog = {
+      contract: {
+        name: '{{contractName.raw}}',
+        instanceName: '{{name.raw}}',
+        instanceAddress: '0x{{name.raw}}',
+      },
+      decoded: decoded{{name.Capitalized}}TestLog,
+      ...createDefaultLog(),
+    }
+    {{name.raw}}TestLog.id = lognum.toString()
+    lognum += 1
+    {{name.raw}}TestLog.block.height = miniHash('{{name.raw}}' + 'height')
+    {{name.raw}}TestLog.block.timestamp = miniHash('{{name.raw}}' + 'timestamp')
+    {{name.raw}}TestLog.transactionHash = '0xmy{{name.raw}}transactionhashfromlog'
+
+{{/instances}}
+    // Minimal ProcessorContext mock
+    const ctx = { store } as any
+    const { {{eventName.caMel}}s } = await handle{{eventName.PasCal}}s(
+      'ethereum-mainnet',
+      ctx,
+      [{{#instances}}{{name.raw}}TestLog{{^last}}, {{/last}}{{/instances}}],
+      {{#hasPreviouslyProcessed}}{ {{#previouslyProcessed}}{{previouslyProcessedField.caMel}}: []{{^last}}, {{/last}}{{/previouslyProcessed}} }{{/hasPreviouslyProcessed}}{{^hasPreviouslyProcessed}}{}{{/hasPreviouslyProcessed}}
+    )
+
+    expect({{eventName.caMel}}s).toHaveLength({{instances.length}})
+{{#instances}}
+    expect({{eventName.caMel}}s[{{index}}]).toMatchObject({
+      id: {{name.raw}}TestLog.id,
+      block: {{name.raw}}TestLog.block.height,
+      blockTimestamp: BigInt({{name.raw}}TestLog.block.timestamp),
+      ...decoded{{name.Capitalized}}TestLog,
+      txnHash: '0xmy{{name.raw}}transactionhashfromlog',
+    })
+{{/instances}}
+
+    const dbTransfers = await db.dataSource
+      .createQueryBuilder()
+      .select('*')
+      .from('{{tableName.sna_ke}}', 't')
+      .addOrderBy('id::int', 'ASC')
+      .getRawMany()
+
+    expect(dbTransfers).toHaveLength({{instances.length}})
+{{#instances}}
+    expect(dbTransfers[{{index}}]).toMatchObject({
+      id: {{name.raw}}TestLog.id,
+      block: {{name.raw}}TestLog.block.height,
+      block_timestamp: {{name.raw}}TestLog.block.timestamp.toString(),
+      txn_hash: '0xmy{{name.raw}}transactionhashfromlog',
+{{#eventFields}}
+      {{fieldName.sna_ke}}: {{#isBytes}}Object.fromEntries(decoded{{name.Capitalized}}TestLog.{{fieldName.raw}}.entries()){{/isBytes}}{{^isBytes}}{{#isBigInt}}decoded{{name.Capitalized}}TestLog.{{fieldName.raw}}.toString(){{/isBigInt}}{{^isBigInt}}decoded{{name.Capitalized}}TestLog.{{fieldName.raw}}{{/isBigInt}}{{/isBytes}},
+{{/eventFields}}
+    })
+{{/instances}}
+  })
+})

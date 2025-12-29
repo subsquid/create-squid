@@ -22,10 +22,9 @@ import {
 import { getNetworkConfigs } from './network-configs';
 import { extractEventName } from './string-transforms/event';
 import {
-  decapitalize,
-  kebabToCamel,
+  createCasingObject,
   toSnakeCase,
-  capitalize
+  kebabToCamel
 } from './string-transforms/casing';
 import { cleanupExistingFiles } from './filesystem';
 import { runCodeGeneration, installDependencies } from './external-calls';
@@ -310,7 +309,6 @@ export class SquidGenerator {
     };
   }
 
-
   private async generateFromTemplates(project: GeneratedProject): Promise<void> {
     const templateFiles = await glob('**/*.mustache', { cwd: this.templatesDir, dot: true });
 
@@ -337,9 +335,10 @@ export class SquidGenerator {
     for (const contractData of templateData.contracts) {
       for (const eventData of contractData.events) {
         // Replace placeholders in filename
+        // Only certain .caMel variants are supported for now
         let outputFileName = templateFile
-          .replace('{{contractNameLower}}', contractData.contractNameLower)
-          .replace('{{eventNameLower}}', eventData.eventNameLower)
+          .replace('{{contractName.caMel}}', contractData.contractName.caMel)
+          .replace('{{eventName.caMel}}', eventData.eventName.caMel)
           .replace('.mustache', '');
 
         const outputPath = path.join(this.options.outputDir, outputFileName);
@@ -347,14 +346,12 @@ export class SquidGenerator {
         // Use contractData directly - it already has all the needed data including previouslyProcessed
         const specificTemplateData = {
           ...templateData,
-          contractName: contractData.name,
-          contractNameLower: contractData.contractNameLower,
-          eventName: eventData.name,
-          eventNameLower: eventData.eventNameLower,
+          contractName: contractData.contractName,
+          eventName: eventData.eventName,
           eventFields: eventData.eventFields,
           instances: contractData.instances,
+          tableName: eventData.tableName,
           previouslyProcessed: eventData.previouslyProcessed,
-          tableNameSnake: eventData.tableNameSnake,
           hasPreviouslyProcessed: eventData.hasPreviouslyProcessed
         };
 
@@ -441,7 +438,7 @@ function prepareContractTemplateData(project: GeneratedProject): ContractTemplat
   });
 
   return {
-    projectName: project.name,
+    projectName: createCasingObject(project.name),
     projectDescription: project.description,
     contracts
   };
@@ -468,19 +465,24 @@ async function prepareNetworkBasedTemplateData(project: GeneratedProject): Promi
       throw new Error(`Unknown network: ${networkName}`);
     }
     
-    const shortName = networkConfig.rawRpcAbbreviation;
+    const name = createCasingObject(networkName);
+    const shortName = networkConfig.rawRpcAbbreviation ? createCasingObject(networkConfig.rawRpcAbbreviation) : null;
+    const rpcEndpoint = createCasingObject(networkConfig.rpcEndpoint);
     
     const contracts = project.contracts.map(contract => {
       const processedContract = processContractForTemplate(contract, false, allEvents);
       
-      const instances = contract.instances.map(instance => ({
-        name: instance.name,
-        address: instance.address,
-        proxy: instance.proxy,
-        network: instance.network,
-        range: instance.range,
-        isOnNetwork: instance.network === networkName
-      }));
+      const instances = contract.instances.map(instance => {
+        const instanceName = createCasingObject(instance.name);
+        return {
+          name: instanceName,
+          address: instance.address,
+          proxy: instance.proxy,
+          network: instance.network,
+          range: instance.range,
+          isOnNetwork: instance.network === networkName
+        };
+      });
 
       const hasInstancesOnNetwork = instances.some(instance => instance.isOnNetwork);
 
@@ -492,10 +494,10 @@ async function prepareNetworkBasedTemplateData(project: GeneratedProject): Promi
     });
 
     return {
-      name: networkName,
+      name,
       shortName,
       gateway: networkConfig.gateway,
-      rpcEndpoint: networkConfig.rpcEndpoint,
+      rpcEndpoint,
       finalityConfirmation: networkConfig.finalityConfirmation,
       publicRpcUrl: networkConfig.publicRpcUrl,
       rawRpcAbbreviation: networkConfig.rawRpcAbbreviation,
@@ -510,7 +512,7 @@ async function prepareNetworkBasedTemplateData(project: GeneratedProject): Promi
   });
 
   return {
-    projectName: project.name,
+    projectName: createCasingObject(project.name),
     projectDescription: project.description,
     networks,
     contracts
@@ -525,19 +527,18 @@ function processContractForTemplate(
   isLast: boolean = false, 
   allEvents: Array<{contract: ProcessedContract, event: ProcessedEvent}>
 ): ProcessedContractForTemplate {
-  const contractNameLower = decapitalize(contract.name);
-  const contractNameCamel = decapitalize(contract.name);
+  const contractName = createCasingObject(contract.name);
   const abiFileName = path.basename(contract.abiPath, '.json');
-  const abiImportName = kebabToCamel(abiFileName);
+  const abiImportName = createCasingObject(kebabToCamel(abiFileName));
   
   const events = contract.events.map(event => {
-    const eventNameLower = decapitalize(event.name);
+    const eventName = createCasingObject(event.name);
     
     const eventFields = event.abiEvent.inputs.map((input: any, index: number, array: any[]) => {
       const fieldType = mapSolidityTypeToGraphQL(input.type);
+      const fieldName = createCasingObject(input.name);
       return {
-        fieldName: input.name,
-        fieldNameSnake: toSnakeCase(input.name),
+        fieldName,
         fieldType,
         isBigInt: fieldType === 'BigInt',
         isBoolean: fieldType === 'Boolean',
@@ -555,45 +556,51 @@ function processContractForTemplate(
     const previouslyProcessed = [];
     for (let i = 0; i < currentEventIndex; i++) {
       const prevEvent = allEvents[i];
+      const prevEventName = createCasingObject(prevEvent.event.name);
+      const prevContractName = createCasingObject(prevEvent.contract.name);
+      // Create the field name (event name in camelCase + 's' for plural)
+      const fieldNameStr = prevEventName.caMel + 's';
       previouslyProcessed.push({
-        previouslyProcessedField: decapitalize(prevEvent.event.name) + 's',
-        previouslyProcessedFieldType: prevEvent.contract.name + prevEvent.event.name
+        previouslyProcessedField: createCasingObject(fieldNameStr),
+        previouslyProcessedFieldType: createCasingObject(prevContractName.raw + prevEventName.raw)
       });
     }
 
+    // Create table name from contract and event names
+    const tableNameStr = `${contractName['sna_ke']}_${eventName['sna_ke']}`;
+    const tableName = createCasingObject(tableNameStr);
+
     return {
-      name: event.name,
-      eventNameLower,
-      contractNameLower,
-      contractName: contract.name,
+      eventName,
+      contractName,
       eventFields,
       previouslyProcessed,
-      tableNameSnake: `${toSnakeCase(contract.name)}_${toSnakeCase(event.name)}`,
+      tableName,
       hasPreviouslyProcessed: previouslyProcessed.length > 0
     };
   });
 
   const result: ProcessedContractForTemplate = {
-    name: contract.name,
-    contractNameLower,
-    contractNameCamel,
+    contractName,
     abiFileName,
     abiImportName,
     events,
     last: isLast
   };
 
-  result.instances = contract.instances.map((instance, index) => ({
-    name: instance.name,
-    nameCapitalized: capitalize(instance.name),
-    address: instance.address,
-    proxy: instance.proxy,
-    network: instance.network,
-    range: instance.range,
-    isOnNetwork: true, // For dynamic templates, we include all instances
-    index: index,
-    last: index === contract.instances.length - 1
-  }));
+  result.instances = contract.instances.map((instance, index) => {
+    const name = createCasingObject(instance.name);
+    return {
+      name,
+      address: instance.address,
+      proxy: instance.proxy,
+      network: instance.network,
+      range: instance.range,
+      isOnNetwork: true, // For dynamic templates, we include all instances
+      index: index,
+      last: index === contract.instances.length - 1
+    };
+  });
 
   return result;
 }

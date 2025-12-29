@@ -67,3 +67,55 @@ export function toMacroCase(str: string): string {
     .replace(/_+/g, '_') // Replace consecutive underscores with single underscore
     .replace(/^_|_$/g, ''); // Remove leading and trailing underscores
 }
+
+/**
+ * Converts a camelCased, space separated, or snake_case string to camelCase
+ */
+export function toCamelCase(str: string): string {
+  if (!str) return str;
+  return decapitalize(toPascalCase(str));
+}
+
+/**
+ * Unified casing object that provides all common string casing variants
+ * This allows templates to access any casing variant via object properties
+ * 
+ * Input must be in camelCase.
+ * 
+ * @example
+ * const name = createCasingObject('myEventName');
+ * // name.raw === 'myEventName'
+ * // name.lower === 'myeventname'
+ * // name.UPPER === 'MYEVENTNAME'
+ * // name.Capitalized === 'MyEventName'
+ * // name.sna_ke === 'my_event_name'
+ * // name.MAC_RO === 'MY_EVENT_NAME'
+ * // name.caMel === 'myEventName'
+ * // name.PasCal === 'MyEventName'
+ * // name['ke-bab'] === 'my-event-name'
+ */
+export interface CasingObject {
+  raw: string;
+  lower: string;
+  UPPER: string;
+  Capitalized: string;
+  'sna_ke': string;
+  'MAC_RO': string;
+  caMel: string;
+  PasCal: string;
+  'ke-bab': string;
+}
+
+export function createCasingObject(str: string): CasingObject {
+  return {
+    raw: str,
+    lower: str.toLowerCase(),
+    UPPER: str.toUpperCase(),
+    Capitalized: capitalize(str),
+    'sna_ke': toSnakeCase(str),
+    'MAC_RO': toMacroCase(str),
+    caMel: toCamelCase(str),
+    PasCal: toPascalCase(str),
+    'ke-bab': toKebabCase(str)
+  };
+}

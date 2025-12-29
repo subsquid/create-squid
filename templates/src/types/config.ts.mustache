@@ -1,8 +1,8 @@
 import { Log, FieldSelection, DataHandlerContext } from '@subsquid/evm-processor'
 import { DecodedLogWithContractMetadata } from './extendedData'
 
-export type NetworkName = {{#networks}}'{{name}}'{{^last}} | {{/last}}{{/networks}}
-export type ContractName = {{#contracts}}'{{name}}'{{^last}} | {{/last}}{{/contracts}}
+export type NetworkName = {{#networks}}'{{name.raw}}'{{^last}} | {{/last}}{{/networks}}
+export type ContractName = {{#contracts}}'{{contractName.raw}}'{{^last}} | {{/last}}{{/contracts}}
 
 export interface EventConfig<TStore, F extends FieldSelection> {
   name: string,

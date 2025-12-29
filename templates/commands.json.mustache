@@ -45,15 +45,15 @@
       "cmd": ["squid-evm-typegen", "./src/abi", {"glob": "./abi/*.json"}, "--multicall"]
     },
 {{#networks}}
-    "process:{{name}}": {
+    "process:{{name.raw}}": {
       "description": "Load .env and start the squid processor",
       "deps": ["build", "migration:apply"],
-      "cmd": ["node", "--require=dotenv/config", "lib/main.js", "{{name}}"]
+      "cmd": ["node", "--require=dotenv/config", "lib/main.js", "{{name.raw}}"]
     },
-    "process:{{name}}:prod": {
+    "process:{{name.raw}}:prod": {
       "description": "Start the squid processor",
       "deps": ["migration:apply"],
-      "cmd": ["node", "lib/main.js", "{{name}}"],
+      "cmd": ["node", "lib/main.js", "{{name.raw}}"],
       "hidden": true
     },
 {{/networks}}

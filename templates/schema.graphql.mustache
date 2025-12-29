@@ -1,6 +1,6 @@
 {{#contracts}}
 {{#events}}
-type {{contractName}}{{name}} @entity {
+type {{contractName.PasCal}}{{eventName.PasCal}} @entity {
   id: ID!
   network: String!
   instanceAddress: String!
@@ -8,7 +8,7 @@ type {{contractName}}{{name}} @entity {
   blockTimestamp: BigInt
   txnHash: String!
 {{#eventFields}}
-  {{fieldName}}: {{fieldType}}!
+  {{fieldName.raw}}: {{fieldType}}!
 {{/eventFields}}
 }
 

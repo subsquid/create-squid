@@ -1,0 +1,49 @@
+// {{eventName.caMel}}.ts
+// This module maps {{eventName.PasCal}} event logs to
+// any TypeORM model classes these logs might affect.
+
+import {
+{{#previouslyProcessed}}  {{previouslyProcessedFieldType.PasCal}},
+{{/previouslyProcessed}}  {{contractName.PasCal}}{{eventName.PasCal}}
+} from '../../model'
+import {
+  ProcessorContext,
+  DecodedLogWithContractMetadata
+} from '../../config'
+import {
+  NetworkName
+} from '../../types/config'
+
+export async function handle{{eventName.PasCal}}s(
+  network: NetworkName,
+  ctx: ProcessorContext,
+  logs: DecodedLogWithContractMetadata[],
+  previouslyProcessed: {
+{{#previouslyProcessed}}
+    {{previouslyProcessedField.caMel}}: {{previouslyProcessedFieldType.PasCal}}[],
+{{/previouslyProcessed}}
+  },
+): Promise<{
+{{#previouslyProcessed}}  {{previouslyProcessedField.caMel}}: {{previouslyProcessedFieldType.PasCal}}[],
+{{/previouslyProcessed}}  {{eventName.caMel}}s: {{contractName.PasCal}}{{eventName.PasCal}}[],
+}> {
+
+  const {{eventName.caMel}}s = logs.map(l => new {{contractName.PasCal}}{{eventName.PasCal}}({
+    id: l.id,
+    network,
+    instanceAddress: l.contract.instanceAddress,
+    block: l.block.height,
+    blockTimestamp: BigInt(l.block.timestamp),
+    txnHash: l.transactionHash,
+{{#eventFields}}
+    {{fieldName.raw}}: l.decoded.{{fieldName.raw}},
+{{/eventFields}}
+  }))
+
+  await ctx.store.insert({{eventName.caMel}}s)
+
+  return {
+    ...previouslyProcessed,
+    {{eventName.caMel}}s,
+  }
+}
