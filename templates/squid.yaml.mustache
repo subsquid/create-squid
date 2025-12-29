@@ -7,9 +7,9 @@ deploy:
     postgres: 
     rpc:
 {{#networks}}
-{{#shortName}}
-      - {{shortName.ke-bab}}.http
-{{/shortName}}
+{{#rpcAbbreviation}}
+      - {{rpcAbbreviation}}.http
+{{/rpcAbbreviation}}
 {{/networks}}
   processor:
 {{#networks}}

@@ -10,8 +10,7 @@ import {
   ProcessedInstance,
   ProcessedEvent,
   GeneratorOptions,
-  ContractTemplateData,
-  NetworkBasedTemplateData,
+  UnifiedTemplateData,
   ProcessedContractForTemplate
 } from './types';
 import {
@@ -82,9 +81,6 @@ export class SquidGenerator {
   private templatesDir: string;
   private generatedFiles: Set<string> = new Set();
 
-  // Template file patterns for different data preparation strategies
-  private static readonly CONTRACT_TEMPLATE_PATTERNS = ['schema.graphql', 'processor.ts', 'main.ts'];
-  private static readonly NETWORK_TEMPLATE_PATTERNS = ['config.ts'];
   private static readonly PRESERVED_FILES = new Set(['createSquid.yaml']);
   private static readonly PRESERVED_DIRS = new Set(['abi', '.git']);
   
@@ -331,7 +327,7 @@ export class SquidGenerator {
   }
 
   private async generateDynamicTemplates(templatePath: string, templateFile: string, project: GeneratedProject): Promise<void> {
-    const templateData = prepareContractTemplateData(project);
+    const templateData = await prepareUnifiedTemplateData(project);
     
     // Generate templates for each contract and event
     for (const contractData of templateData.contracts) {
@@ -365,27 +361,9 @@ export class SquidGenerator {
   private async renderTemplate(templatePath: string, outputPath: string, project: GeneratedProject): Promise<void> {
     const template = await fs.readFile(templatePath, 'utf8');
     
-    // Determine which template data function to use based on the template file
-    const templateData = await this.selectTemplateData(templatePath, project);
+    const templateData = await prepareUnifiedTemplateData(project);
     
     await this.renderTemplateWithData(templatePath, outputPath, templateData);
-  }
-
-  /**
-   * Selects the appropriate template data preparation strategy based on the template file
-   */
-  private async selectTemplateData(templatePath: string, project: GeneratedProject): Promise<any> {
-    const isContractTemplate = SquidGenerator.CONTRACT_TEMPLATE_PATTERNS.some(pattern => 
-      templatePath.includes(pattern)
-    );
-    
-    if (isContractTemplate) {
-      // These templates need contract data without network-specific filtering
-      return prepareContractTemplateData(project);
-    } else {
-      // Other templates (including config.ts) need network-based data
-      return await prepareNetworkBasedTemplateData(project);
-    }
   }
 
   private async renderTemplateWithData(templatePath: string, outputPath: string, templateData: any): Promise<void> {
@@ -424,9 +402,9 @@ export class SquidGenerator {
  */
 
 /**
- * Prepares contract template data for templates that need all contracts
+ * Prepares unified template data that includes all information needed by any template
  */
-function prepareContractTemplateData(project: GeneratedProject): ContractTemplateData {
+async function prepareUnifiedTemplateData(project: GeneratedProject): Promise<UnifiedTemplateData> {
   // Build a flat list of all events in order to determine previously processed fields
   const allEvents: Array<{contract: ProcessedContract, event: ProcessedEvent}> = [];
   for (const contract of project.contracts) {
@@ -435,53 +413,28 @@ function prepareContractTemplateData(project: GeneratedProject): ContractTemplat
     }
   }
 
-  const contracts = project.contracts.map((contract, index) => {
+  const allContracts = project.contracts.map((contract, index) => {
     return processContractForTemplate(contract, index === project.contracts.length - 1, allEvents);
   });
 
-  return {
-    projectName: createCasingObject(kebabToCamel(project.name)),
-    projectDescription: project.description,
-    contracts
-  };
-}
-
-/**
- * Prepares network-based template data for templates that need network-specific information
- */
-async function prepareNetworkBasedTemplateData(project: GeneratedProject): Promise<NetworkBasedTemplateData> {
-  // Build a flat list of all events in order to determine previously processed fields
-  const allEvents: Array<{contract: ProcessedContract, event: ProcessedEvent}> = [];
-  for (const contract of project.contracts) {
-    for (const event of contract.events) {
-      allEvents.push({ contract, event });
-    }
-  }
-
   // Get network configurations
   const networkConfigs = await getNetworkConfigs();
-
-  const networks = project.networks.map((networkName, index) => {
+  const allNetworks = project.networks.map((networkName, index) => {
     const networkConfig = networkConfigs[networkName];
     if (!networkConfig) {
       throw new Error(`Unknown network: ${networkName}`);
     }
     
-    // Network name should remain as kebab-case string (it's an enum value)
-    // But we also need a CasingObject for template usage
     const name = createCasingObject(kebabToCamel(networkName));
-    const rpcAbbreviation = networkConfig.rawRpcAbbreviation;
-    // rpcEndpoint is already a MACRO_CASE string like "RPC_ETH_HTTP", keep as-is for env var name
-    const rpcEndpoint = networkConfig.rpcEndpoint;
     
-    const contracts = project.contracts.map(contract => {
+    // For each network, create network-specific contract views with filtered instances
+    const contractsForNetwork = project.contracts.map(contract => {
       const processedContract = processContractForTemplate(contract, false, allEvents);
       
-      const instances = contract.instances.map(instance => {
-        // Instance name is already camelCase per schema
-        const instanceName = createCasingObject(instance.name);
+      const instancesForNetwork = contract.instances.map(instance => {
+        const instanceNameCasing = createCasingObject(instance.name);
         return {
-          name: instanceName,
+          name: instanceNameCasing,
           address: instance.address,
           proxy: instance.proxy,
           network: instance.network,
@@ -490,38 +443,33 @@ async function prepareNetworkBasedTemplateData(project: GeneratedProject): Promi
         };
       });
 
-      const hasInstancesOnNetwork = instances.some(instance => instance.isOnNetwork);
+      const hasInstancesOnNetwork = instancesForNetwork.some(instance => instance.isOnNetwork);
 
       return {
         ...processedContract,
-        instances,
+        instances: instancesForNetwork,
         hasInstancesOnNetwork
       };
     });
 
     return {
       name,
-      rpcAbbreviation,
-      rpcEndpoint,
+      rpcAbbreviation: networkConfig.rawRpcAbbreviation,
+      rpcEndpoint: networkConfig.rpcEndpoint,
       gateway: networkConfig.gateway,
       finalityConfirmation: networkConfig.finalityConfirmation,
       publicRpcUrl: networkConfig.publicRpcUrl,
       rawRpcAbbreviation: networkConfig.rawRpcAbbreviation,
-      contracts,
+      contracts: contractsForNetwork,
       last: index === project.networks.length - 1
     };
-  });
-
-  // For schema.graphql and other templates that need all contracts
-  const contracts = project.contracts.map((contract, index) => {
-    return processContractForTemplate(contract, index === project.contracts.length - 1, allEvents);
   });
 
   return {
     projectName: createCasingObject(kebabToCamel(project.name)),
     projectDescription: project.description,
-    networks,
-    contracts
+    contracts: allContracts,
+    networks: allNetworks
   };
 }
 

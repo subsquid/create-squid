@@ -133,15 +133,13 @@ export interface NetworkTemplateData {
   last: boolean;
 }
 
-export interface ContractTemplateData {
+/**
+ * Unified template data structure that contains all information needed by any template
+ * All templates now see the same data structure and can access what they need
+ */
+export interface UnifiedTemplateData {
   projectName: CasingObject;
   projectDescription: string;
   contracts: ProcessedContractForTemplate[];
-}
-
-export interface NetworkBasedTemplateData {
-  projectName: CasingObject;
-  projectDescription: string;
   networks: NetworkTemplateData[];
-  contracts: ProcessedContractForTemplate[];
 }
