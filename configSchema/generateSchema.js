@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Script to generate createSquid.schema.json with up-to-date network list
+ * Script to generate create-squid.schema.json with up-to-date network list
  * Fetches network data from Subsquid archives and updates the schema
  */
 
@@ -11,8 +11,8 @@ const https = require('https');
 
 // Configuration
 const ARCHIVES_URL = 'https://cdn.subsquid.io/archives/evm.json';
-const TEMPLATE_FILE = path.join(__dirname, 'createSquid.schema.mustache');
-const OUTPUT_FILE = path.join(__dirname, 'createSquid.schema.json');
+const TEMPLATE_FILE = path.join(__dirname, 'create-squid.schema.mustache');
+const OUTPUT_FILE = path.join(__dirname, 'create-squid.schema.json');
 
 /**
  * Fetch network data from Subsquid archives

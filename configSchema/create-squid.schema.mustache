@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://subsquid.io/schemas/createSquid.schema.json",
+  "title": "CreateSquid Configuration Schema",
+  "description": "Schema for createSquid.yaml configuration files used by the create-squid utility",
+  "type": "object",
+  "required": ["name", "description", "contracts"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the squid project (kebab-cased, 3-30 characters)",
+      "minLength": 3,
+      "maxLength": 30,
+      "pattern": "^[a-z0-9]([a-z0-9\\-]*[a-z0-9])?$"
+    },
+    "description": {
+      "type": "string",
+      "description": "A description of the squid project",
+      "minLength": 1
+    },
+    "contracts": {
+      "type": "array",
+      "description": "List of smart contracts to index (across all chains)",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "abi", "instances", "events"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the contract (required, should be PascalCased)",
+            "minLength": 1,
+            "pattern": "^[a-zA-Z][a-zA-Z0-9]*$"
+          },
+          "abi": {
+            "type": "string",
+            "description": "Path to the ABI JSON file for this contract",
+            "minLength": 1,
+            "pattern": "\\.json$"
+          },
+          "instances": {
+            "type": "array",
+            "description": "List of contract instances to track",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["address", "name", "network", "range"],
+              "properties": {
+                "address": {
+                  "type": "string",
+                  "description": "The contract address. Use the implementation address for upgradable contracts",
+                  "pattern": "^0x[a-fA-F0-9]{40}$"
+                },
+                "proxy": {
+                  "type": "string",
+                  "description": "Optional proxy contract address. Events from this address will be captured if specified",
+                  "pattern": "^0x[a-fA-F0-9]{40}$"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "A unique name for this contract instance (should be camelCased)",
+                  "minLength": 1,
+                  "pattern": "^[a-zA-Z][a-zA-Z0-9]*$"
+                },
+                "network": {
+                  "type": "string",
+                  "description": "The blockchain network identifier (enum)",
+                  "minLength": 1,
+                  "enum": [
+                    {{#networks}}
+                    "{{.}}"{{^last}},{{/last}}
+                    {{/networks}}
+                  ]
+                },
+                "range": {
+                  "type": "object",
+                  "description": "Block range to process for this instance",
+                  "required": ["from"],
+                  "properties": {
+                    "from": {
+                      "type": "integer",
+                      "description": "Starting block number",
+                      "minimum": 0
+                    },
+                    "to": {
+                      "type": "integer",
+                      "description": "Ending block number (optional, will index in real time if omitted and RPC is available)",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "events": {
+            "type": "array",
+            "description": "List of events to track for this contract",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "description": "Event signature in the format 'EventName(type1,type2,type3)'",
+              "pattern": "^[a-zA-Z][a-zA-Z0-9]*\\([^)]*\\)$",
+              "examples": [
+                "Transfer(address,address,uint256)",
+                "LiquidationCall(address,address,address,uint256,uint256,address,bool)",
+                "Approved(address,uint256,uint256,bytes32)"
+              ]
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "name": "create-squid-ref-event-tables",
+      "description": "Reference squid for the one-table-per-event mode of the create-squid utility",
+      "contracts": [
+        {
+          "name": "Tokens",
+          "abi": "./abi/erc20.json",
+          "instances": [
+            {
+              "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+              "name": "usdc",
+              "network": "ethereum-mainnet",
+              "range": {
+                "from": 6082465
+              }
+            }
+          ],
+          "events": [
+            "Transfer(address,address,uint256)"
+          ]
+        }
+      ]
+    }
+  ]
+}
