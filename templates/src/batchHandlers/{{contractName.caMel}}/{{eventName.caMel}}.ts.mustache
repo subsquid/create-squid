@@ -20,15 +20,15 @@ export async function handle{{eventName.PasCal}}s(
   logs: DecodedLogWithContractMetadata[],
   previouslyProcessed: {
 {{#previouslyProcessed}}
-    {{previouslyProcessedField.caMel}}: {{previouslyProcessedFieldType.PasCal}}[],
+    {{previouslyProcessedField.caMelPlural}}: {{previouslyProcessedFieldType.PasCal}}[],
 {{/previouslyProcessed}}
   },
 ): Promise<{
-{{#previouslyProcessed}}  {{previouslyProcessedField.caMel}}: {{previouslyProcessedFieldType.PasCal}}[],
-{{/previouslyProcessed}}  {{eventName.caMel}}s: {{contractName.PasCal}}{{eventName.PasCal}}[],
+{{#previouslyProcessed}}  {{previouslyProcessedField.caMelPlural}}: {{previouslyProcessedFieldType.PasCal}}[],
+{{/previouslyProcessed}}  {{eventName.caMelPlural}}: {{contractName.PasCal}}{{eventName.PasCal}}[],
 }> {
 
-  const {{eventName.caMel}}s = logs.map(l => new {{contractName.PasCal}}{{eventName.PasCal}}({
+  const {{eventName.caMelPlural}} = logs.map(l => new {{contractName.PasCal}}{{eventName.PasCal}}({
     id: l.id,
     network,
     instanceAddress: l.contract.instanceAddress,
@@ -36,14 +36,14 @@ export async function handle{{eventName.PasCal}}s(
     blockTimestamp: BigInt(l.block.timestamp),
     txnHash: l.transactionHash,
 {{#eventFields}}
-    {{fieldName.raw}}: l.decoded.{{fieldName.raw}},
+    {{fieldName.caMel}}: l.decoded.{{fieldName.caMel}},
 {{/eventFields}}
   }))
 
-  await ctx.store.insert({{eventName.caMel}}s)
+  await ctx.store.insert({{eventName.caMelPlural}})
 
   return {
     ...previouslyProcessed,
-    {{eventName.caMel}}s,
+    {{eventName.caMelPlural}},
   }
 }

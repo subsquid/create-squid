@@ -84,7 +84,6 @@ export function toCamelCase(str: string): string {
  * 
  * @example
  * const name = createCasingObject('myEventName');
- * // name.raw === 'myEventName'
  * // name.lower === 'myeventname'
  * // name.UPPER === 'MYEVENTNAME'
  * // name.Capitalized === 'MyEventName'
@@ -93,9 +92,9 @@ export function toCamelCase(str: string): string {
  * // name.caMel === 'myEventName'
  * // name.PasCal === 'MyEventName'
  * // name['ke-bab'] === 'my-event-name'
+ * // name.caMelPlural === 'myEventNames'
  */
 export interface CasingObject {
-  raw: string;
   lower: string;
   UPPER: string;
   Capitalized: string;
@@ -104,18 +103,20 @@ export interface CasingObject {
   caMel: string;
   PasCal: string;
   'ke-bab': string;
+  caMelPlural: string;
 }
 
 export function createCasingObject(str: string): CasingObject {
+  const camel = toCamelCase(str);
   return {
-    raw: str,
-    lower: str.toLowerCase(),
-    UPPER: str.toUpperCase(),
-    Capitalized: capitalize(str),
-    'sna_ke': toSnakeCase(str),
-    'MAC_RO': toMacroCase(str),
-    caMel: toCamelCase(str),
-    PasCal: toPascalCase(str),
-    'ke-bab': toKebabCase(str)
+    lower: camel.toLowerCase(),
+    UPPER: camel.toUpperCase(),
+    Capitalized: capitalize(camel),
+    'sna_ke': toSnakeCase(camel),
+    'MAC_RO': toMacroCase(camel),
+    caMel: camel,
+    PasCal: toPascalCase(camel),
+    'ke-bab': toKebabCase(camel),
+    caMelPlural: camel + 's'
   };
 }

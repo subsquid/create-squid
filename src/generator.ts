@@ -24,7 +24,9 @@ import { extractEventName } from './string-transforms/event';
 import {
   createCasingObject,
   toSnakeCase,
-  kebabToCamel
+  kebabToCamel,
+  toCamelCase,
+  decapitalize
 } from './string-transforms/casing';
 import { cleanupExistingFiles } from './filesystem';
 import { runCodeGeneration, installDependencies } from './external-calls';
@@ -438,7 +440,7 @@ function prepareContractTemplateData(project: GeneratedProject): ContractTemplat
   });
 
   return {
-    projectName: createCasingObject(project.name),
+    projectName: createCasingObject(kebabToCamel(project.name)),
     projectDescription: project.description,
     contracts
   };
@@ -465,14 +467,18 @@ async function prepareNetworkBasedTemplateData(project: GeneratedProject): Promi
       throw new Error(`Unknown network: ${networkName}`);
     }
     
-    const name = createCasingObject(networkName);
-    const shortName = networkConfig.rawRpcAbbreviation ? createCasingObject(networkConfig.rawRpcAbbreviation) : null;
-    const rpcEndpoint = createCasingObject(networkConfig.rpcEndpoint);
+    // Network name should remain as kebab-case string (it's an enum value)
+    // But we also need a CasingObject for template usage
+    const name = createCasingObject(kebabToCamel(networkName));
+    const rpcAbbreviation = networkConfig.rawRpcAbbreviation;
+    // rpcEndpoint is already a MACRO_CASE string like "RPC_ETH_HTTP", keep as-is for env var name
+    const rpcEndpoint = networkConfig.rpcEndpoint;
     
     const contracts = project.contracts.map(contract => {
       const processedContract = processContractForTemplate(contract, false, allEvents);
       
       const instances = contract.instances.map(instance => {
+        // Instance name is already camelCase per schema
         const instanceName = createCasingObject(instance.name);
         return {
           name: instanceName,
@@ -495,9 +501,9 @@ async function prepareNetworkBasedTemplateData(project: GeneratedProject): Promi
 
     return {
       name,
-      shortName,
-      gateway: networkConfig.gateway,
+      rpcAbbreviation,
       rpcEndpoint,
+      gateway: networkConfig.gateway,
       finalityConfirmation: networkConfig.finalityConfirmation,
       publicRpcUrl: networkConfig.publicRpcUrl,
       rawRpcAbbreviation: networkConfig.rawRpcAbbreviation,
@@ -512,7 +518,7 @@ async function prepareNetworkBasedTemplateData(project: GeneratedProject): Promi
   });
 
   return {
-    projectName: createCasingObject(project.name),
+    projectName: createCasingObject(kebabToCamel(project.name)),
     projectDescription: project.description,
     networks,
     contracts
@@ -527,15 +533,19 @@ function processContractForTemplate(
   isLast: boolean = false, 
   allEvents: Array<{contract: ProcessedContract, event: ProcessedEvent}>
 ): ProcessedContractForTemplate {
-  const contractName = createCasingObject(contract.name);
+  // Contract name is PascalCase per schema, convert to camelCase
+  const contractName = createCasingObject(decapitalize(contract.name));
   const abiFileName = path.basename(contract.abiPath, '.json');
+  // ABI file name is kebab-case, convert to camelCase for import name
   const abiImportName = createCasingObject(kebabToCamel(abiFileName));
   
   const events = contract.events.map(event => {
-    const eventName = createCasingObject(event.name);
+    // Event name is PascalCase (from signature), convert to camelCase
+    const eventName = createCasingObject(decapitalize(event.name));
     
     const eventFields = event.abiEvent.inputs.map((input: any, index: number, array: any[]) => {
       const fieldType = mapSolidityTypeToGraphQL(input.type);
+      // Field names from ABI are already camelCase
       const fieldName = createCasingObject(input.name);
       return {
         fieldName,
@@ -556,19 +566,18 @@ function processContractForTemplate(
     const previouslyProcessed = [];
     for (let i = 0; i < currentEventIndex; i++) {
       const prevEvent = allEvents[i];
-      const prevEventName = createCasingObject(prevEvent.event.name);
-      const prevContractName = createCasingObject(prevEvent.contract.name);
-      // Create the field name (event name in camelCase + 's' for plural)
-      const fieldNameStr = prevEventName.caMel + 's';
+      const prevEventName = createCasingObject(decapitalize(prevEvent.event.name));
+      const prevContractName = createCasingObject(decapitalize(prevEvent.contract.name));
+      // Use caMelPlural for the field name
       previouslyProcessed.push({
-        previouslyProcessedField: createCasingObject(fieldNameStr),
-        previouslyProcessedFieldType: createCasingObject(prevContractName.raw + prevEventName.raw)
+        previouslyProcessedField: prevEventName,
+        previouslyProcessedFieldType: createCasingObject(prevContractName.PasCal + prevEventName.PasCal)
       });
     }
 
     // Create table name from contract and event names
     const tableNameStr = `${contractName['sna_ke']}_${eventName['sna_ke']}`;
-    const tableName = createCasingObject(tableNameStr);
+    const tableName = createCasingObject(toCamelCase(tableNameStr));
 
     return {
       eventName,
@@ -589,6 +598,7 @@ function processContractForTemplate(
   };
 
   result.instances = contract.instances.map((instance, index) => {
+    // Instance name is already camelCase per schema
     const name = createCasingObject(instance.name);
     return {
       name,

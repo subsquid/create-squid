@@ -123,9 +123,9 @@ export interface ProcessedContractForTemplate {
 
 export interface NetworkTemplateData {
   name: CasingObject;
-  shortName: CasingObject | null;
+  rpcAbbreviation: string | null;
+  rpcEndpoint: string; // env var name in MACRO_CASE, like "RPC_ETH_HTTP"
   gateway: string;
-  rpcEndpoint: CasingObject;
   finalityConfirmation: number;
   publicRpcUrl: string;
   rawRpcAbbreviation: string | null;

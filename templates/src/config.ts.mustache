@@ -65,27 +65,27 @@ export type DecodedLogWithContractMetadata = _DecodedLogWithContractMetadata<typ
 
 export const config: FullConfig = {
 {{#networks}}
-  '{{name.raw}}': {
+  '{{name.ke-bab}}': {
     gateway: '{{{gateway}}}',
-    rpcEndpoint: process.env.{{rpcEndpoint.raw}},
+    rpcEndpoint: process.env.{{rpcEndpoint}},
     finalityConfirmation: {{finalityConfirmation}},
     requests: [
 {{#contracts}}
 {{#hasInstancesOnNetwork}}
       {
-        contract: '{{contractName.raw}}',
+        contract: '{{contractName.PasCal}}',
         addresses: {
 {{#instances}}
 {{#isOnNetwork}}
-          '{{name.raw}}': '{{#proxy}}{{proxy}}{{/proxy}}{{^proxy}}{{address}}{{/proxy}}'.toLowerCase(),
+          '{{name.caMel}}': '{{#proxy}}{{proxy}}{{/proxy}}{{^proxy}}{{address}}{{/proxy}}'.toLowerCase(),
 {{/isOnNetwork}}
 {{/instances}}
         },
         events: [
 {{#events}}
           {
-            name: '{{eventName.raw}}',
-            abiHelper: {{abiImportName.caMel}}Abi.events.{{eventName.raw}},
+            name: '{{eventName.PasCal}}',
+            abiHelper: {{abiImportName.caMel}}Abi.events.{{eventName.PasCal}},
             batchHandler: handle{{eventName.PasCal}}s,
           },
 {{/events}}

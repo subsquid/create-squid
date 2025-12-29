@@ -1,5 +1,5 @@
 {
-  "name": "create-squid-ref-event-2",
+  "name": "create-squid-ref-event2",
   "description": "Reference squid for the one-table-per-event mode of the create-squid utility",
   "private": true,
   "scripts": {

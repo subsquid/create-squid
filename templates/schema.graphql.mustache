@@ -8,7 +8,7 @@ type {{contractName.PasCal}}{{eventName.PasCal}} @entity {
   blockTimestamp: BigInt
   txnHash: String!
 {{#eventFields}}
-  {{fieldName.raw}}: {{fieldType}}!
+  {{fieldName.caMel}}: {{fieldType}}!
 {{/eventFields}}
 }
 
