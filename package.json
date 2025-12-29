@@ -1,6 +1,6 @@
 {
   "name": "@abernatskiy/create-squid",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Automatically generate Subsquid blockchain indexers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
