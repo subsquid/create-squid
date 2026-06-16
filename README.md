@@ -1,8 +1,5 @@
 # create-squid: scaffold a TypeScript blockchain indexer
 
-[![npm](https://img.shields.io/npm/v/@abernatskiy/create-squid)](https://www.npmjs.com/package/@abernatskiy/create-squid)
-[![license](https://img.shields.io/npm/l/@abernatskiy/create-squid)](./LICENSE)
-
 Code generation tool for [SQD](https://docs.sqd.dev) indexers a.k.a. squids. It scaffolds a ready-to-run TypeScript indexer from a YAML config and your contract ABIs. Capabilities:
 
  - works with EVM smart contracts;
