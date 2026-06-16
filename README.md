@@ -1,6 +1,9 @@
-# create-squid
+# create-squid: scaffold a TypeScript blockchain indexer
 
-Code generation tool for [Subsquid](https://docs.sqd.ai) indexers a.k.a. squids. Capabilities:
+[![npm](https://img.shields.io/npm/v/@abernatskiy/create-squid)](https://www.npmjs.com/package/@abernatskiy/create-squid)
+[![license](https://img.shields.io/npm/l/@abernatskiy/create-squid)](./LICENSE)
+
+Code generation tool for [SQD](https://docs.sqd.dev) indexers a.k.a. squids. It scaffolds a ready-to-run TypeScript indexer from a YAML config and your contract ABIs. Capabilities:
 
  - works with EVM smart contracts;
  - makes multichain indexers;
@@ -15,6 +18,8 @@ Limitations of the tool (will be removed in the future):
     * addresses obtained by event decoding will not be consistent with the addresses used in the rest of the data: they will be in mixed case while the SDK-related addresses will be in flat lower case.
 
 **Requirements:** NodeJS v20 or newer, Docker
+
+The generated indexers are built on the [Squid SDK](https://github.com/subsquid/squid-sdk). See the [SQD documentation](https://docs.sqd.dev/en/sdk) for guides on customizing and deploying your squid.
 
 ## Quickstart
 
